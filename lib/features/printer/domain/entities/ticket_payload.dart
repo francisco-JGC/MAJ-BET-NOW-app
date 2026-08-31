@@ -30,6 +30,7 @@ class TicketPayload extends Equatable {
     required this.date,
     this.drawAt,
     this.seller,
+    this.salePoint,
     this.client,
     this.footer,
   });
@@ -43,6 +44,9 @@ class TicketPayload extends Equatable {
   final DateTime date;
   final DateTime? drawAt;
   final String? seller;
+  /// Nombre visible de la sucursal a la que pertenece el vendedor.
+  /// Aparece en el header impreso y en la imagen de WhatsApp.
+  final String? salePoint;
   final String? client;
   final String? footer;
 
@@ -66,6 +70,7 @@ class TicketPayload extends Equatable {
         date,
         drawAt,
         seller,
+        salePoint,
         client,
         footer,
       ];

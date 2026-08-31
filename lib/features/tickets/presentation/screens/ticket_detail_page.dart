@@ -53,26 +53,32 @@ class _DetailView extends StatelessWidget {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
+        // El header (juego, folio, chip, datos) se centra elemento por
+        // elemento con `textAlign` + `Center`. La sección "Números
+        // vendidos" y el total conservan su layout original en columnas.
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  game?.name ?? '—',
-                  style: theme.textTheme.headlineSmall
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                ),
-              ),
-              _StatusChip(status: ticket.status),
-            ],
+          SizedBox(
+            width: double.infinity,
+            child: Text(
+              game?.name ?? '—',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.headlineSmall
+                  ?.copyWith(fontWeight: FontWeight.w700),
+            ),
           ),
           const SizedBox(height: 4),
-          Text(
-            '#${ticket.folio}',
-            style: theme.textTheme.titleMedium
-                ?.copyWith(color: Colors.grey.shade700),
+          SizedBox(
+            width: double.infinity,
+            child: Text(
+              '#${ticket.folio}',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(color: Colors.grey.shade700),
+            ),
           ),
+          const SizedBox(height: 8),
+          Center(child: _StatusChip(status: ticket.status)),
           const SizedBox(height: 16),
           _InfoRow(
             label: 'Venta',
@@ -183,25 +189,32 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Layout centrado: una sola línea con "Label: value". Label en gris
+    // suave y value en negro. Reemplaza el layout viejo de dos columnas
+    // (label 110px + expanded) que se veía desalineado en un scroll
+    // centrado como el resto del header.
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 110,
-            child: Text(
-              label,
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 13,
+      child: SizedBox(
+        width: double.infinity,
+        child: Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(
+                text: '$label: ',
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 13,
+                ),
               ),
-            ),
+              TextSpan(
+                text: value,
+                style: const TextStyle(fontSize: 14, color: Colors.black),
+              ),
+            ],
           ),
-          Expanded(
-            child: Text(value, style: const TextStyle(fontSize: 14)),
-          ),
-        ],
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }

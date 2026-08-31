@@ -171,6 +171,10 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     final money = kAmountFormat;
 
     const infoStyle = PosStyles(bold: true, align: PosAlign.left);
+    // Header centrado (folio, sucursal, sorteo, vendedor, cliente): ayuda
+    // a la lectura rápida y respeta la simetría con el QR y las notas
+    // finales, que también van centradas.
+    const infoCenter = PosStyles(bold: true, align: PosAlign.center);
     const infoRight = PosStyles(bold: true, align: PosAlign.right);
     const numberStyle = PosStyles(
       bold: true,
@@ -186,18 +190,20 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
 
     return [
       ...g.reset(),
-      ...g.setStyles(const PosStyles(align: PosAlign.left)),
-      ...g.text('  Folio: ${p.folio}', styles: infoStyle),
-      ...g.text('  Fecha: ${formatDateTime(p.date)}', styles: infoStyle),
+      ...g.setStyles(const PosStyles(align: PosAlign.center)),
+      ...g.text('Folio: ${p.folio}', styles: infoCenter),
+      ...g.text('Fecha: ${formatDateTime(p.date)}', styles: infoCenter),
       ...g.text(
-        '  Sorteo: ${p.gameName}'
+        'Sorteo: ${p.gameName}'
         '${p.drawAt != null ? ' - ${formatDrawHint(p.drawAt!)}' : ''}',
-        styles: infoStyle,
+        styles: infoCenter,
       ),
+      if (p.salePoint != null)
+        ...g.text('Sucursal: ${p.salePoint}', styles: infoCenter),
       if (p.seller != null)
-        ...g.text('  Vendedor: ${p.seller}', styles: infoStyle),
+        ...g.text('Vendedor: ${p.seller}', styles: infoCenter),
       if (p.client != null)
-        ...g.text('  Cliente: ${p.client}', styles: infoStyle),
+        ...g.text('Cliente: ${p.client}', styles: infoCenter),
       ...g.hr(),
       ...g.row([
         gutter(),

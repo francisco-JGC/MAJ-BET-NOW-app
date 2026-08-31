@@ -668,6 +668,7 @@ class _MultiSorteoGameViewState
             date: DateTime.now(),
             drawAt: receipt.drawAt,
             seller: ref.read(currentUserProvider)?.name,
+            salePoint: ref.read(activeSalePointProvider).selected?.name,
             client: cart.client,
           ),
         );
@@ -702,6 +703,7 @@ class _MultiSorteoGameViewState
             date: DateTime.now(),
             drawAt: receipt.drawAt,
             seller: ref.read(currentUserProvider)?.name,
+            salePoint: ref.read(activeSalePointProvider).selected?.name,
             client: cart.client,
           ),
         );
@@ -738,6 +740,7 @@ class _MultiSorteoGameViewState
             date: DateTime.now(),
             drawAt: receipt.drawAt,
             seller: ref.read(currentUserProvider)?.name,
+            salePoint: ref.read(activeSalePointProvider).selected?.name,
             client: cart.client,
           ),
         );
@@ -772,6 +775,7 @@ class _MultiSorteoGameViewState
             date: DateTime.now(),
             drawAt: receipt.drawAt,
             seller: ref.read(currentUserProvider)?.name,
+            salePoint: ref.read(activeSalePointProvider).selected?.name,
             client: cart.client,
           ),
         );
@@ -1259,6 +1263,7 @@ Future<void> _printRegular(
       date: DateTime.now(),
       drawAt: receipt.drawAt,
       seller: ref.read(currentUserProvider)?.name,
+      salePoint: ref.read(activeSalePointProvider).selected?.name,
       client: cart.client,
     ),
     onSuccess: () {
@@ -1309,6 +1314,7 @@ Future<void> _printCombo(
       date: DateTime.now(),
       drawAt: receipt.drawAt,
       seller: ref.read(currentUserProvider)?.name,
+      salePoint: ref.read(activeSalePointProvider).selected?.name,
       client: cart.client,
     ),
     onSuccess: () {
@@ -1356,6 +1362,7 @@ Future<void> _printGana3(
       date: DateTime.now(),
       drawAt: receipt.drawAt,
       seller: ref.read(currentUserProvider)?.name,
+      salePoint: ref.read(activeSalePointProvider).selected?.name,
       client: cart.client,
     ),
     onSuccess: () {
@@ -1403,6 +1410,7 @@ Future<void> _printDates(
       date: DateTime.now(),
       drawAt: receipt.drawAt,
       seller: ref.read(currentUserProvider)?.name,
+      salePoint: ref.read(activeSalePointProvider).selected?.name,
       client: cart.client,
     ),
     onSuccess: () {

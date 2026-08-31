@@ -93,7 +93,9 @@ class _InfoBlock extends StatelessWidget {
     }
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      // Header centrado: folio, fecha, sorteo, sucursal, vendedor, cliente.
+      // Mismo criterio que el ticket térmico impreso.
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         _InfoLine(text: 'Folio: ${payload.folio}'),
         _InfoLine(text: 'Fecha: $saleFormatted'),
@@ -102,6 +104,8 @@ class _InfoBlock extends StatelessWidget {
               ? 'Sorteo: ${payload.gameName} - $drawFormatted'
               : 'Sorteo: ${payload.gameName}',
         ),
+        if (payload.salePoint != null && payload.salePoint!.isNotEmpty)
+          _InfoLine(text: 'Sucursal: ${payload.salePoint!}'),
         if (payload.seller != null && payload.seller!.isNotEmpty)
           _InfoLine(text: 'Vendedor: ${payload.seller!}'),
         if (payload.client != null && payload.client!.isNotEmpty)
@@ -121,6 +125,7 @@ class _InfoLine extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 1),
       child: Text(
         text,
+        textAlign: TextAlign.center,
         style: const TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w700,
