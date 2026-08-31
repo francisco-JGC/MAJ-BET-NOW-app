@@ -58,7 +58,7 @@ class _LockOverlay extends StatelessWidget {
                   Icon(
                     nightly ? Icons.nights_stay : Icons.lock_clock,
                     size: 56,
-                    color: nightly ? Colors.indigo : Colors.orange,
+                    color: nightly ? Colors.indigo : Colors.purple,
                   ),
                   const SizedBox(height: 16),
                   Text(

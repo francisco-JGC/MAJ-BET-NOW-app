@@ -531,9 +531,9 @@ class _StatusChip extends StatelessWidget {
     if (ticket.isWinner) {
       return _Chip(
         text: 'Ganador',
-        bg: Colors.amber.shade50,
-        border: Colors.amber.shade300,
-        fg: Colors.amber.shade800,
+        bg: Colors.purple.shade50,
+        border: Colors.purple.shade300,
+        fg: Colors.purple.shade800,
       );
     }
     return _Chip(

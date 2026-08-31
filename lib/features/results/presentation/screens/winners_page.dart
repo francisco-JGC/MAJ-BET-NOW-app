@@ -134,7 +134,7 @@ class _TotalsBar extends StatelessWidget {
         child: _TotalCell(
           label: 'Total ganado por clientes',
           value: totalWon,
-          color: Colors.orange.shade800,
+          color: Colors.purple.shade800,
         ),
       ),
     );
@@ -205,15 +205,15 @@ class _WinnerTile extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.orange.shade50,
+                    color: Colors.purple.shade50,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.orange.shade200),
+                    border: Border.all(color: Colors.purple.shade200),
                   ),
                   child: Text(
                     kCurrencyFormat.format(ticket.totalPrize),
                     style: TextStyle(
                       fontWeight: FontWeight.w700,
-                      color: Colors.orange.shade800,
+                      color: Colors.purple.shade800,
                     ),
                   ),
                 ),

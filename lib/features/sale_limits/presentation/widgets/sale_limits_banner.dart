@@ -174,8 +174,8 @@ class _ChipBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = blocked ? Colors.red.shade100 : Colors.amber.shade100;
-    final fg = blocked ? Colors.red.shade900 : Colors.amber.shade900;
+    final bg = blocked ? Colors.red.shade100 : Colors.purple.shade100;
+    final fg = blocked ? Colors.red.shade900 : Colors.purple.shade900;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(

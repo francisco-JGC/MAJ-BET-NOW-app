@@ -298,7 +298,7 @@ class _ResultView extends ConsumerWidget {
   Color _headerColor(TicketEvaluation e) {
     if (e.status == 'voided') return Colors.red;
     if (e.isWinner) return Colors.green.shade700;
-    if (e.hasPendingDraw) return Colors.orange.shade700;
+    if (e.hasPendingDraw) return Colors.purple.shade700;
     return Colors.grey.shade700;
   }
 

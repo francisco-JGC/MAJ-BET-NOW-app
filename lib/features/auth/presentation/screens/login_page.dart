@@ -367,7 +367,7 @@ class _BlockedPanel extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFFFFBEB),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFFDE68A)),
+        border: Border.all(color: const Color(0xFFC4B5FD)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -378,7 +378,7 @@ class _BlockedPanel extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFFEF3C7),
+                  color: Color(0xFFEDE9FE),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
