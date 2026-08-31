@@ -220,8 +220,8 @@ class _NavItemTile extends StatelessWidget {
   final NavItem item;
   final bool selected;
 
-  static const _accent = Color(0xFFF5A623);
-  static const _accentBg = Color(0xFFFFF7E0);
+  static const _accent = Color(0xFF7C3AED); // purple-600
+  static const _accentBg = Color(0xFFEDE9FE); // violet-100
 
   @override
   Widget build(BuildContext context) {

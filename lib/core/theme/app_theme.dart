@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 class AppTheme {
   const AppTheme._();
 
-  static const Color primary = Color(0xFFC6892D);
-  static const Color accent = Color(0xFFF5A623);
-  static const Color accentSoft = Color(0xFFFFF7E0);
+  // Paleta MajbetNow — morado profundo con acento dorado, inspirada en el logo.
+  static const Color primary = Color(0xFF7C3AED); // purple-600
+  static const Color primaryDark = Color(0xFF5B21B6); // purple-800 (hover, active)
+  static const Color accent = Color(0xFFEAB308); // gold — para KPIs de éxito
+  static const Color accentSoft = Color(0xFFEDE9FE); // violet-100 — fondos sutiles
 
   static ThemeData light() {
     final scheme = ColorScheme.fromSeed(
