@@ -90,6 +90,8 @@ class _DetailView extends StatelessWidget {
             value: '${saleFmt.format(ticket.drawAt.toLocal())} '
                 '· ${formatTime12h(ticket.drawAt)}',
           ),
+          if (ticket.salePointName != null && ticket.salePointName!.isNotEmpty)
+            _InfoRow(label: 'Sucursal', value: ticket.salePointName!),
           if (ticket.client != null && ticket.client!.isNotEmpty)
             _InfoRow(label: 'Cliente', value: ticket.client!),
           if (ticket.isVoided && ticket.voidedReason != null)
