@@ -137,7 +137,7 @@ class _HeaderStats extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         gradient: const LinearGradient(
-          colors: [AppTheme.primary, AppTheme.accent],
+          colors: [AppTheme.primary, AppTheme.primaryDark],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
@@ -301,7 +301,7 @@ class _DrawCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
                   gradient: const LinearGradient(
-                    colors: [AppTheme.primary, AppTheme.accent],
+                    colors: [AppTheme.primary, AppTheme.primaryDark],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),

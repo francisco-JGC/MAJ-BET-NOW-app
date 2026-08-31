@@ -143,7 +143,7 @@ class _NumberDot extends StatelessWidget {
       alignment: Alignment.center,
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [AppTheme.accent, AppTheme.primary],
+          colors: [AppTheme.primaryDark, AppTheme.primary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

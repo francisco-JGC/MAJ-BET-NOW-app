@@ -365,7 +365,7 @@ class _BlockedPanel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBEB),
+        color: const Color(0xFFF5F3FF), // violet-50
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: const Color(0xFFC4B5FD)),
       ),
@@ -383,7 +383,7 @@ class _BlockedPanel extends StatelessWidget {
                 ),
                 child: const Icon(
                   Icons.lock_outline,
-                  color: Color(0xFFB45309),
+                  color: Color(0xFF5B21B6), // purple-800
                   size: 20,
                 ),
               ),

@@ -307,7 +307,7 @@ class _ResultCard extends StatelessWidget {
               height: 3,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppTheme.primary, AppTheme.accent],
+                  colors: [AppTheme.primary, AppTheme.primaryDark],
                 ),
               ),
             ),
@@ -330,7 +330,7 @@ class _Header extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppTheme.primary, AppTheme.accent],
+          colors: [AppTheme.primary, AppTheme.primaryDark],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),

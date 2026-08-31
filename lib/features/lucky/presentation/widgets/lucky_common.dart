@@ -98,7 +98,7 @@ class RecommendedSection extends StatelessWidget {
         children: [
           const Row(
             children: [
-              Icon(Icons.auto_awesome, color: AppTheme.accent, size: 20),
+              Icon(Icons.auto_awesome, color: AppTheme.primaryDark, size: 20),
               SizedBox(width: 8),
               Text(
                 'Números recomendados',
@@ -149,7 +149,7 @@ class _RecommendedChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [AppTheme.primary, AppTheme.accent],
+          colors: [AppTheme.primary, AppTheme.primaryDark],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

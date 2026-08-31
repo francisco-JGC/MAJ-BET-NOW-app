@@ -134,7 +134,7 @@ class _DreamTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [AppTheme.primary, AppTheme.accent],
+                colors: [AppTheme.primary, AppTheme.primaryDark],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),

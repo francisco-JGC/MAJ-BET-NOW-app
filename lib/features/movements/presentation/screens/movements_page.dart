@@ -89,7 +89,7 @@ class _DetailCard extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppTheme.primary, AppTheme.accent],
+                  colors: [AppTheme.primary, AppTheme.primaryDark],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
