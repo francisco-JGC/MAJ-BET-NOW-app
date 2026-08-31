@@ -37,10 +37,13 @@ class _GamesGrid extends StatelessWidget {
     return GridView.builder(
       padding: const EdgeInsets.all(12),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+        // 2 columnas: tiles más grandes, mejor legibilidad del logo del
+        // juego. Aspect ~1.05 (casi cuadrado, apenas más alto que ancho)
+        // se ve natural con las imágenes 1:1 nuevas.
+        crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 1.4,
+        childAspectRatio: 1.05,
       ),
       itemCount: games.length,
       itemBuilder: (context, i) {
