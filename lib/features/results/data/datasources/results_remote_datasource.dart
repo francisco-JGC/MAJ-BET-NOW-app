@@ -11,6 +11,7 @@ abstract interface class ResultsRemoteDatasource {
   Future<List<DrawResultModel>> listResults(ListDrawResultsQuery query);
   Future<List<WinningTicketModel>> listWinners(ListWinnersQuery query);
   Future<TicketEvaluationModel> evaluateTicket(String ticketId);
+  Future<void> markAsPaid(String ticketId);
 }
 
 class ResultsRemoteDatasourceImpl implements ResultsRemoteDatasource {
@@ -60,6 +61,15 @@ class ResultsRemoteDatasourceImpl implements ResultsRemoteDatasource {
       final data = response.data;
       if (data == null) throw ServerException('Empty response from server');
       return TicketEvaluationModel.fromJson(data);
+    } on DioException catch (e) {
+      throw _mapError(e);
+    }
+  }
+
+  @override
+  Future<void> markAsPaid(String ticketId) async {
+    try {
+      await client.instance.post<void>('/tickets/$ticketId/pay');
     } on DioException catch (e) {
       throw _mapError(e);
     }

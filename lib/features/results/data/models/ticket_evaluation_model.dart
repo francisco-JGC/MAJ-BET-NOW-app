@@ -12,6 +12,8 @@ class TicketEvaluationModel extends TicketEvaluation {
     required super.hasPendingDraw,
     required super.totalPrize,
     required super.lines,
+    required super.isPaid,
+    super.paidAt,
   });
 
   factory TicketEvaluationModel.fromJson(Map<String, dynamic> json) {
@@ -19,6 +21,7 @@ class TicketEvaluationModel extends TicketEvaluation {
         .map((raw) => raw as Map<String, dynamic>)
         .map(WinningTicketLineModel.fromJson)
         .toList();
+    final paidAtRaw = json['paidAt'] as String?;
     return TicketEvaluationModel(
       ticketId: json['ticketId'] as String,
       folio: json['folio'] as String,
@@ -29,6 +32,8 @@ class TicketEvaluationModel extends TicketEvaluation {
       hasPendingDraw: json['hasPendingDraw'] as bool,
       totalPrize: (json['totalPrize'] as num).toInt(),
       lines: rawLines,
+      isPaid: json['isPaid'] as bool? ?? false,
+      paidAt: paidAtRaw != null ? DateTime.parse(paidAtRaw) : null,
     );
   }
 }

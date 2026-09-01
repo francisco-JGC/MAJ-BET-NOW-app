@@ -61,4 +61,6 @@ abstract interface class ResultsRepository {
     ListWinnersQuery query,
   );
   Future<Either<Failure, TicketEvaluation>> evaluateTicket(String ticketId);
+  /** Marca el boleto como pagado (marca visual — no afecta cálculos). */
+  Future<Either<Failure, void>> markAsPaid(String ticketId);
 }

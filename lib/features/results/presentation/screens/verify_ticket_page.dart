@@ -148,7 +148,7 @@ class _VerifyTicketPageState extends ConsumerState<VerifyTicketPage> {
   }
 }
 
-class _ResultView extends ConsumerWidget {
+class _ResultView extends ConsumerStatefulWidget {
   const _ResultView({
     required this.evaluation,
     required this.onScanAnother,
@@ -158,7 +158,58 @@ class _ResultView extends ConsumerWidget {
   final VoidCallback onScanAnother;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ResultView> createState() => _ResultViewState();
+}
+
+class _ResultViewState extends ConsumerState<_ResultView> {
+  late TicketEvaluation _evaluation;
+  bool _paying = false;
+  String? _payError;
+
+  @override
+  void initState() {
+    super.initState();
+    _evaluation = widget.evaluation;
+  }
+
+  Future<void> _pay() async {
+    setState(() {
+      _paying = true;
+      _payError = null;
+    });
+    final either = await getIt<ResultsRepository>().markAsPaid(
+      _evaluation.ticketId,
+    );
+    if (!mounted) return;
+    either.match(
+      (failure) => setState(() {
+        _paying = false;
+        _payError = failure.message;
+      }),
+      (_) => setState(() {
+        _paying = false;
+        // Actualiza el estado local para mostrar "Pagado" inmediatamente
+        // sin necesidad de re-escanear.
+        _evaluation = TicketEvaluation(
+          ticketId: _evaluation.ticketId,
+          folio: _evaluation.folio,
+          gameId: _evaluation.gameId,
+          drawAt: _evaluation.drawAt,
+          status: _evaluation.status,
+          isWinner: _evaluation.isWinner,
+          hasPendingDraw: _evaluation.hasPendingDraw,
+          totalPrize: _evaluation.totalPrize,
+          lines: _evaluation.lines,
+          isPaid: true,
+          paidAt: DateTime.now(),
+        );
+      }),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final evaluation = _evaluation;
     final games = ref.watch(gamesControllerProvider).value ?? const [];
     final Game? game = games
         .where((g) => g.id == evaluation.gameId)
@@ -202,6 +253,68 @@ class _ResultView extends ConsumerWidget {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  if (evaluation.isPaid)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.green.withValues(alpha: 0.5),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.check_circle,
+                            size: 16,
+                            color: Colors.green,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Boleto pagado',
+                            style: TextStyle(
+                              color: Colors.green.shade800,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.green.shade700,
+                      ),
+                      icon: _paying
+                          ? const SizedBox.square(
+                              dimension: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.payments_outlined, size: 18),
+                      label: Text(_paying ? 'Procesando…' : 'Pagar boleto'),
+                      onPressed: _paying ? null : _pay,
+                    ),
+                  if (_payError != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _payError!,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.red.shade700,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ],
               ],
             ),
@@ -283,7 +396,7 @@ class _ResultView extends ConsumerWidget {
           FilledButton.icon(
             icon: const Icon(Icons.qr_code_scanner),
             label: const Text('Escanear otro boleto'),
-            onPressed: onScanAnother,
+            onPressed: widget.onScanAnother,
           ),
           const SizedBox(height: 8),
           TextButton(

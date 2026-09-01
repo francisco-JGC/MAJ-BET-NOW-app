@@ -32,6 +32,11 @@ class ResultsRepositoryImpl implements ResultsRepository {
     return _guard(() => remote.evaluateTicket(ticketId));
   }
 
+  @override
+  Future<Either<Failure, void>> markAsPaid(String ticketId) {
+    return _guard(() => remote.markAsPaid(ticketId));
+  }
+
   Future<Either<Failure, T>> _guard<T>(Future<T> Function() run) async {
     try {
       return Right(await run());

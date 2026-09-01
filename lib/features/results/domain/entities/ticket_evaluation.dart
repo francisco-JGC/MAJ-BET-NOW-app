@@ -13,6 +13,8 @@ class TicketEvaluation extends Equatable {
     required this.hasPendingDraw,
     required this.totalPrize,
     required this.lines,
+    required this.isPaid,
+    this.paidAt,
   });
 
   final String ticketId;
@@ -24,6 +26,9 @@ class TicketEvaluation extends Equatable {
   final bool hasPendingDraw;
   final int totalPrize;
   final List<WinningTicketLine> lines;
+  /** Marca visual — no afecta cálculos ni listados. */
+  final bool isPaid;
+  final DateTime? paidAt;
 
   bool get isVoided => status == 'voided';
 
@@ -38,5 +43,7 @@ class TicketEvaluation extends Equatable {
         hasPendingDraw,
         totalPrize,
         lines,
+        isPaid,
+        paidAt,
       ];
 }
