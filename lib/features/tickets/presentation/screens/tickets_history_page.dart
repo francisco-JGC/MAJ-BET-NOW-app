@@ -353,8 +353,13 @@ class _TicketMenu extends ConsumerWidget {
 
   Future<void> _reprint(BuildContext context, WidgetRef ref) async {
     final messenger = ScaffoldMessenger.of(context);
-    final printer = ref.read(printerControllerProvider);
-    if (!printer.isConnected) {
+    // Nombramos la variable `printerState` (no `printer`) para no sombrear
+    // el alias del import `printer.*` que usamos abajo para el enum
+    // `TicketCopyKind`. Con `printer` como variable local, dentro del
+    // closure de `either.match` el compilador resolvía `printer.TicketCopyKind`
+    // contra `PrinterState` y disparaba `undefined_getter`.
+    final printerState = ref.read(printerControllerProvider);
+    if (!printerState.isConnected) {
       messenger.showSnackBar(const SnackBar(
         content: Text(
           'No hay impresora conectada. Ve a Configuración → Impresora.',
@@ -375,6 +380,7 @@ class _TicketMenu extends ConsumerWidget {
         final payload = _buildPayload(
           detail: detail,
           seller: ref.read(currentUserProvider)?.name,
+          copyKind: printer.TicketCopyKind.reprint,
         );
         await ref.read(printerControllerProvider.notifier).printTicket(payload);
         if (!context.mounted) return;
@@ -407,6 +413,7 @@ class _TicketMenu extends ConsumerWidget {
         final payload = _buildPayload(
           detail: detail,
           seller: ref.read(currentUserProvider)?.name,
+          copyKind: printer.TicketCopyKind.resend,
         );
         if (!context.mounted) return;
         final shared = await const TicketImageShareService()
@@ -421,12 +428,14 @@ class _TicketMenu extends ConsumerWidget {
     );
   }
 
-  // Los reprints y reenvíos generan el ticket idéntico al original — sin
-  // marca de "reimpresión" ni "reenvío" — para que el cliente lo perciba
-  // como el mismo boleto.
+  // Los reprints y reenvíos comparten estructura con la venta original;
+  // el flag `copyKind` es lo único que cambia — el header pinta un
+  // banner arriba (`RECIBO DE COPIA` / `BOLETO REENVIADO`) para que el
+  // cliente no confunda la copia con una venta nueva.
   printer.TicketPayload _buildPayload({
     required TicketDetail detail,
     required String? seller,
+    required printer.TicketCopyKind copyKind,
   }) {
     final summary = detail.summary;
     return printer.TicketPayload(
@@ -448,9 +457,10 @@ class _TicketMenu extends ConsumerWidget {
       seller: seller,
       // El backend resuelve `salePointName` en el detail — llega con el
       // fetch de `findById`. Sin este campo, la reimpresión y el reenvío
-      // salían sin la línea "Sucursal:" en el header.
+      // salían sin la línea "Puesto:" en el header.
       salePoint: summary.salePointName,
       client: summary.client,
+      copyKind: copyKind,
     );
   }
 }

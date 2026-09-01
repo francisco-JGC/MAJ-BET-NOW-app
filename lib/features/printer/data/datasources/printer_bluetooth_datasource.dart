@@ -200,30 +200,62 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     final gameName = sanitizeForPrinter(p.gameName);
     final footer = sanitizeForPrinter(p.footer);
 
+    // Cliente es una propiedad opcional cuyo LABEL siempre debe imprimirse
+    // (aunque el valor esté vacío). El resto sigue el orden del negocio:
+    // Juego, Folio, Fecha, Sorteo, Cliente, Vendedor, Puesto.
+    //
+    // Cuando el ticket es una reimpresión o un reenvío, se imprime un
+    // banner arriba (`RECIBO DE COPIA` / `BOLETO REENVIADO`) para que el
+    // cliente sepa que el papel no es una venta nueva.
+    final copyBanner = switch (p.copyKind) {
+      TicketCopyKind.reprint => 'RECIBO DE COPIA',
+      TicketCopyKind.resend => 'BOLETO REENVIADO',
+      TicketCopyKind.original => null,
+    };
     return [
       ...g.reset(),
       ...g.setStyles(const PosStyles(align: PosAlign.center)),
+      if (copyBanner != null) ...[
+        ...g.text(
+          copyBanner,
+          styles: const PosStyles(
+            align: PosAlign.center,
+            bold: true,
+            height: PosTextSize.size2,
+            width: PosTextSize.size2,
+            reverse: true,
+          ),
+        ),
+        ...g.emptyLines(1),
+      ],
+      ...g.text('Juego: $gameName', styles: infoCenter),
+      ...g.emptyLines(1),
       ...g.text('Folio: ${p.folio}', styles: infoCenter),
+      ...g.emptyLines(1),
       ...g.text('Fecha: ${formatDateTime(p.date)}', styles: infoCenter),
-      ...g.text(
-        'Sorteo: $gameName'
-        '${p.drawAt != null ? ' - ${formatDrawHint(p.drawAt!)}' : ''}',
-        styles: infoCenter,
-      ),
-      if (salePoint.isNotEmpty)
-        ...g.text('Sucursal: $salePoint', styles: infoCenter),
-      if (seller.isNotEmpty)
+      ...g.emptyLines(1),
+      if (p.drawAt != null) ...[
+        ...g.text('Sorteo: ${formatDrawHint(p.drawAt!)}', styles: infoCenter),
+        ...g.emptyLines(1),
+      ],
+      ...g.text('Cliente: $client', styles: infoCenter),
+      ...g.emptyLines(1),
+      if (seller.isNotEmpty) ...[
         ...g.text('Vendedor: $seller', styles: infoCenter),
-      if (client.isNotEmpty)
-        ...g.text('Cliente: $client', styles: infoCenter),
-      ...g.hr(),
+        ...g.emptyLines(1),
+      ],
+      if (salePoint.isNotEmpty)
+        ...g.text('Puesto: $salePoint', styles: infoCenter),
+      ...g.emptyLines(1),
+      ..._dashedLine(g),
       ...g.row([
         gutter(),
-        PosColumn(text: 'No.', width: 3, styles: infoStyle),
+        PosColumn(text: 'Apuesta', width: 3, styles: infoStyle),
         PosColumn(text: 'Monto', width: 3, styles: infoRight),
         PosColumn(text: 'Premio', width: 4, styles: infoRight),
         gutter(),
       ]),
+      ...g.emptyLines(1),
       for (var i = 0; i < p.lines.length; i++) ...[
         if (p.lines[i].subGameName != null &&
             (i == 0 ||
@@ -250,17 +282,18 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
           gutter(),
         ]),
       ],
-      ...g.hr(),
-      ...g.row([
-        gutter(),
-        PosColumn(text: 'TOTAL', width: 5, styles: infoStyle),
-        PosColumn(
-          text: money.format(p.total),
-          width: 5,
-          styles: infoRight,
+      ..._dashedLine(g),
+      ...g.emptyLines(1),
+      ...g.text(
+        'TOTAL: ${kCurrencyFormat.format(p.total)}',
+        styles: const PosStyles(
+          align: PosAlign.center,
+          bold: true,
+          height: PosTextSize.size2,
+          width: PosTextSize.size2,
         ),
-        gutter(),
-      ]),
+      ),
+      ...g.emptyLines(1),
       ...g.hr(),
       ...g.text(
         'Boleto valido para 1 sorteo',
@@ -286,4 +319,15 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     ];
   }
 
+  /// Línea de guiones (`-`) usada para "encerrar" arriba y abajo la tabla
+  /// de números. Sustituye a `g.hr()` (línea continua) en ese bloque para
+  /// que el separador visual sea el mismo carácter que el cliente reconoce
+  /// como delimitador de la sección de jugadas.
+  List<int> _dashedLine(Generator g) {
+    // 32 columnas es el ancho de una impresora de 58mm en la fuente
+    // por defecto del ESC/POS. Alternamos con espacio para que se lea
+    // como guiones separados y no como una barra sólida.
+    const dashed = '- - - - - - - - - - - - - - - -';
+    return g.text(dashed, styles: const PosStyles(align: PosAlign.center));
+  }
 }

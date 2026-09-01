@@ -1,5 +1,11 @@
 import 'package:equatable/equatable.dart';
 
+/// Distingue si el ticket que se está renderizando es la venta original
+/// o una segunda copia (reimpresión física o reenvío por WhatsApp). El
+/// header pinta un banner arriba para que el cliente sepa que no es un
+/// boleto duplicado con validez adicional.
+enum TicketCopyKind { original, reprint, resend }
+
 class TicketLine extends Equatable {
   const TicketLine({
     required this.number,
@@ -33,6 +39,7 @@ class TicketPayload extends Equatable {
     this.salePoint,
     this.client,
     this.footer,
+    this.copyKind = TicketCopyKind.original,
   });
 
   final String id;
@@ -49,6 +56,7 @@ class TicketPayload extends Equatable {
   final String? salePoint;
   final String? client;
   final String? footer;
+  final TicketCopyKind copyKind;
 
   int get total => lines.fold(0, (sum, l) => sum + l.amount);
   int get totalPrize => lines.fold(0, (sum, l) => sum + l.prize);
@@ -73,5 +81,6 @@ class TicketPayload extends Equatable {
         salePoint,
         client,
         footer,
+        copyKind,
       ];
 }

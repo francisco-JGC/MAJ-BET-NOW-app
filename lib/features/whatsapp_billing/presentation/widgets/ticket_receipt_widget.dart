@@ -39,28 +39,34 @@ class TicketReceiptWidget extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (payload.copyKind != TicketCopyKind.original) ...[
+              _CopyBanner(kind: payload.copyKind),
+              const SizedBox(height: 16),
+            ],
             _InfoBlock(payload: payload),
-            const SizedBox(height: 12),
-            const _SolidDivider(),
-            const SizedBox(height: 8),
+            const SizedBox(height: 20),
+            const _DashedDivider(),
+            const SizedBox(height: 14),
             _LinesTable(lines: payload.lines),
-            const SizedBox(height: 8),
-            const _SolidDivider(),
-            const SizedBox(height: 8),
+            const SizedBox(height: 14),
+            const _DashedDivider(),
+            const SizedBox(height: 18),
             _TotalRow(total: payload.total),
-            const SizedBox(height: 8),
+            const SizedBox(height: 18),
             const _SolidDivider(),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             const _CenteredNote(
               text: 'Boleto valido para 1 sorteo',
               bold: true,
             ),
+            const SizedBox(height: 4),
             const _CenteredNote(text: 'Por favor revisar su compra'),
+            const SizedBox(height: 4),
             const _CenteredNote(text: 'No se aceptan devoluciones'),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             _QrBlock(data: payload.toQrData()),
             if (payload.footer != null && payload.footer!.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               _CenteredNote(text: payload.footer!, bold: true),
             ],
           ],
@@ -100,24 +106,33 @@ class _InfoBlock extends StatelessWidget {
           sameDay ? drawTime : '${shortDateFmt.format(drawLocal)} $drawTime';
     }
 
+    // Cliente es una propiedad opcional cuyo LABEL siempre debe aparecer
+    // (aunque el valor esté en blanco). El resto de campos siguen el orden
+    // pedido por el negocio: Juego, Folio, Fecha, Sorteo, Cliente,
+    // Vendedor, Puesto.
+    final client = payload.client?.trim() ?? '';
+
     return Column(
-      // Header centrado: folio, fecha, sorteo, sucursal, vendedor, cliente.
-      // Mismo criterio que el ticket térmico impreso.
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        _InfoLine(text: 'Juego: ${payload.gameName}'),
+        const SizedBox(height: 6),
         _InfoLine(text: 'Folio: ${payload.folio}'),
+        const SizedBox(height: 6),
         _InfoLine(text: 'Fecha: $saleFormatted'),
-        _InfoLine(
-          text: drawFormatted != null
-              ? 'Sorteo: ${payload.gameName} - $drawFormatted'
-              : 'Sorteo: ${payload.gameName}',
-        ),
-        if (payload.salePoint != null && payload.salePoint!.isNotEmpty)
-          _InfoLine(text: 'Sucursal: ${payload.salePoint!}'),
-        if (payload.seller != null && payload.seller!.isNotEmpty)
+        const SizedBox(height: 6),
+        if (drawFormatted != null) ...[
+          _InfoLine(text: 'Sorteo: $drawFormatted'),
+          const SizedBox(height: 6),
+        ],
+        _InfoLine(text: 'Cliente: $client'),
+        const SizedBox(height: 6),
+        if (payload.seller != null && payload.seller!.isNotEmpty) ...[
           _InfoLine(text: 'Vendedor: ${payload.seller!}'),
-        if (payload.client != null && payload.client!.isNotEmpty)
-          _InfoLine(text: 'Cliente: ${payload.client!}'),
+          const SizedBox(height: 6),
+        ],
+        if (payload.salePoint != null && payload.salePoint!.isNotEmpty)
+          _InfoLine(text: 'Puesto: ${payload.salePoint!}'),
       ],
     );
   }
@@ -160,7 +175,7 @@ class _LinesTable extends StatelessWidget {
       children: [
         const Row(
           children: [
-            Expanded(flex: 4, child: Text('No.', style: headerStyle)),
+            Expanded(flex: 4, child: Text('Apuesta', style: headerStyle)),
             Expanded(
               flex: 3,
               child: Text(
@@ -179,7 +194,7 @@ class _LinesTable extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 10),
         for (var i = 0; i < lines.length; i++) ...[
           if (lines[i].subGameName != null &&
               (i == 0 ||
@@ -211,7 +226,7 @@ class _LineRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         children: [
           Expanded(
@@ -267,33 +282,17 @@ class _TotalRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const Expanded(
-          flex: 5,
-          child: Text(
-            'TOTAL',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-              color: _kTicketBrandColor,
-            ),
-          ),
+    return Center(
+      child: Text(
+        'TOTAL: ${kCurrencyFormat.format(total)}',
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w800,
+          color: _kTicketBrandColor,
+          fontFeatures: [FontFeature.tabularFigures()],
         ),
-        Expanded(
-          flex: 5,
-          child: Text(
-            kAmountFormat.format(total),
-            textAlign: TextAlign.right,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-              color: _kTicketBrandColor,
-              fontFeatures: [FontFeature.tabularFigures()],
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -347,6 +346,71 @@ class _SolidDivider extends StatelessWidget {
     return Container(
       height: 1,
       color: _kTicketBrandColor,
+    );
+  }
+}
+
+/// Banner que se pinta arriba del ticket cuando la venta ya no es la
+/// original (reimpresión o reenvío por WhatsApp). Deja claro al cliente
+/// que el papel/imagen que está viendo es una COPIA de una venta previa
+/// y no un boleto nuevo con jugadas adicionales.
+class _CopyBanner extends StatelessWidget {
+  const _CopyBanner({required this.kind});
+  final TicketCopyKind kind;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = switch (kind) {
+      TicketCopyKind.reprint => 'RECIBO DE COPIA',
+      TicketCopyKind.resend => 'BOLETO REENVIADO',
+      TicketCopyKind.original => '',
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+      decoration: BoxDecoration(
+        color: _kTicketBrandColor,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        label,
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.5,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+}
+
+/// Divisor de guiones (`- - -`) que "encierra" la tabla de números arriba y
+/// abajo. Guiones en vez de línea sólida porque replica visualmente el
+/// carácter '-' que imprime la impresora térmica (ver `_dashedLine` en
+/// `printer_bluetooth_datasource`).
+class _DashedDivider extends StatelessWidget {
+  const _DashedDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const dashWidth = 6.0;
+        const dashSpace = 4.0;
+        final count = (constraints.maxWidth / (dashWidth + dashSpace)).floor();
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(
+            count,
+            (_) => Container(
+              width: dashWidth,
+              height: 1.5,
+              color: _kTicketBrandColor,
+            ),
+          ),
+        );
+      },
     );
   }
 }
