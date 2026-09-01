@@ -446,6 +446,10 @@ class _TicketMenu extends ConsumerWidget {
       date: summary.createdAt,
       drawAt: summary.drawAt,
       seller: seller,
+      // El backend resuelve `salePointName` en el detail — llega con el
+      // fetch de `findById`. Sin este campo, la reimpresión y el reenvío
+      // salían sin la línea "Sucursal:" en el header.
+      salePoint: summary.salePointName,
       client: summary.client,
     );
   }
