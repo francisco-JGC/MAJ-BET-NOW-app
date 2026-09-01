@@ -2,8 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency.dart';
 import '../../../printer/domain/entities/ticket_payload.dart';
+
+/// Color de branding para textos del ticket (header, tabla, notas, total,
+/// divisores). `primaryDark` (~#5B21B6) tiene mejor contraste sobre fondo
+/// blanco que `primary` para lecturas largas. Sólo el número comprado y
+/// el QR quedan en negro — son los que el cliente lee al revisar y al
+/// escanear, y se separan visualmente del resto del ticket.
+const _kTicketBrandColor = AppTheme.primaryDark;
 
 /// Replica visual del ticket térmico impreso por
 /// `printer_bluetooth_datasource._buildTicketBytes`. La regla es: **misma
@@ -129,7 +137,7 @@ class _InfoLine extends StatelessWidget {
         style: const TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w700,
-          color: Colors.black,
+          color: _kTicketBrandColor,
         ),
       ),
     );
@@ -145,7 +153,7 @@ class _LinesTable extends StatelessWidget {
     const headerStyle = TextStyle(
       fontSize: 13,
       fontWeight: FontWeight.w700,
-      color: Colors.black,
+      color: _kTicketBrandColor,
     );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -184,7 +192,7 @@ class _LinesTable extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: _kTicketBrandColor,
                 ),
               ),
             ),
@@ -208,6 +216,9 @@ class _LineRow extends StatelessWidget {
         children: [
           Expanded(
             flex: 4,
+            // El número comprado se queda en NEGRO — es el dato crítico que
+            // el cliente lee al revisar su boleto y visualmente lo separa
+            // del resto (branding morado). Esta es la excepción explícita.
             child: Text(
               line.number,
               style: const TextStyle(
@@ -226,7 +237,7 @@ class _LineRow extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: Colors.black,
+                color: _kTicketBrandColor,
                 fontFeatures: [FontFeature.tabularFigures()],
               ),
             ),
@@ -239,7 +250,7 @@ class _LineRow extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
-                color: Colors.black,
+                color: _kTicketBrandColor,
                 fontFeatures: [FontFeature.tabularFigures()],
               ),
             ),
@@ -265,7 +276,7 @@ class _TotalRow extends StatelessWidget {
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w800,
-              color: Colors.black,
+              color: _kTicketBrandColor,
             ),
           ),
         ),
@@ -277,7 +288,7 @@ class _TotalRow extends StatelessWidget {
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w800,
-              color: Colors.black,
+              color: _kTicketBrandColor,
               fontFeatures: [FontFeature.tabularFigures()],
             ),
           ),
@@ -301,7 +312,7 @@ class _CenteredNote extends StatelessWidget {
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: 13,
-          color: Colors.black,
+          color: _kTicketBrandColor,
           fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
         ),
       ),
@@ -335,7 +346,7 @@ class _SolidDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 1,
-      color: Colors.black,
+      color: _kTicketBrandColor,
     );
   }
 }
