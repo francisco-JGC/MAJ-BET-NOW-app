@@ -86,5 +86,5 @@ class LatestResultsController extends AsyncNotifier<List<DrawResult>> {
   }
 }
 
-final latestResultsControllerProvider = AsyncNotifierProvider<
+final latestResultsControllerProvider = AsyncNotifierProvider.autoDispose<
     LatestResultsController, List<DrawResult>>(LatestResultsController.new);

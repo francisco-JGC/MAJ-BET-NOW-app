@@ -68,7 +68,7 @@ class DrawTotalsController
   }
 }
 
-final drawTotalsControllerProvider = AsyncNotifierProvider<
+final drawTotalsControllerProvider = AsyncNotifierProvider.autoDispose<
     DrawTotalsController, List<TicketsByDrawItem>>(
   DrawTotalsController.new,
 );

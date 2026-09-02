@@ -101,7 +101,7 @@ class MovementsController extends AsyncNotifier<MovementsSummary> {
   }
 }
 
-final movementsControllerProvider = AsyncNotifierProvider<
+final movementsControllerProvider = AsyncNotifierProvider.autoDispose<
     MovementsController, MovementsSummary>(MovementsController.new);
 
 // ---------------------------------------------------------------------------
@@ -145,6 +145,6 @@ class MovementsHistoryController
 }
 
 final movementsHistoryProvider =
-    AsyncNotifierProvider<MovementsHistoryController, MovementsList>(
+    AsyncNotifierProvider.autoDispose<MovementsHistoryController, MovementsList>(
   MovementsHistoryController.new,
 );

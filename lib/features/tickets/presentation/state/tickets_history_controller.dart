@@ -187,7 +187,7 @@ class TicketsHistoryController extends AsyncNotifier<TicketsHistoryData> {
   }
 }
 
-final ticketsHistoryControllerProvider = AsyncNotifierProvider<
+final ticketsHistoryControllerProvider = AsyncNotifierProvider.autoDispose<
     TicketsHistoryController, TicketsHistoryData>(
   TicketsHistoryController.new,
 );

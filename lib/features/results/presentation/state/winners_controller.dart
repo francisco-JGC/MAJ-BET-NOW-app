@@ -111,6 +111,6 @@ class WinnersController extends AsyncNotifier<List<WinningTicket>> {
 }
 
 final winnersControllerProvider =
-    AsyncNotifierProvider<WinnersController, List<WinningTicket>>(
+    AsyncNotifierProvider.autoDispose<WinnersController, List<WinningTicket>>(
   WinnersController.new,
 );
