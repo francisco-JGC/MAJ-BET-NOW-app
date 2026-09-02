@@ -170,11 +170,13 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     const numberStyle = PosStyles(
       bold: true,
       height: PosTextSize.size2,
+      width: PosTextSize.size2,
       align: PosAlign.left,
     );
     const numberRight = PosStyles(
       bold: true,
       height: PosTextSize.size2,
+      width: PosTextSize.size2,
       align: PosAlign.right,
     );
     // Sanitizamos campos alimentados por el usuario (nombre del vendedor,
@@ -204,17 +206,7 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
       ...g.reset(),
       ...g.setStyles(const PosStyles(align: PosAlign.center)),
       if (copyBanner != null) ...[
-        ...g.text(
-          copyBanner,
-          styles: const PosStyles(
-            align: PosAlign.center,
-            bold: true,
-            height: PosTextSize.size2,
-            width: PosTextSize.size2,
-            reverse: true,
-          ),
-        ),
-        ...g.emptyLines(1),
+        ...g.text(copyBanner, styles: infoCenter),
       ],
       ...g.text('Juego: $gameName', styles: infoCenter),
       ...g.text('Folio: ${p.folio}', styles: infoCenter),
@@ -261,13 +253,12 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
           ),
         ]),
       ],
-      ..._dashedLine(g),
-      ...g.emptyLines(1),
       ...g.text(
         'TOTAL: ${kCurrencyFormat.format(p.total)}',
         styles: const PosStyles(
           align: PosAlign.center,
           bold: true,
+          height: PosTextSize.size2,
         ),
       ),
       ...g.emptyLines(1),
@@ -284,6 +275,7 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
         'No se aceptan devoluciones',
         styles: const PosStyles(align: PosAlign.center),
       ),
+      ...g.emptyLines(1),
       ..._safeQrCode(g, p.toQrData(), moduleSize: 4),
       if (footer.isNotEmpty)
         ...g.text(

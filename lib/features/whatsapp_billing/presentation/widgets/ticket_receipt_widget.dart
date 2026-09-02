@@ -319,7 +319,7 @@ class _QrBlock extends StatelessWidget {
       child: QrImageView(
         data: data,
         version: QrVersions.auto,
-        size: 200,
+        size: 130,
         backgroundColor: Colors.white,
         errorCorrectionLevel: QrErrorCorrectLevel.M,
         padding: EdgeInsets.zero,
@@ -339,25 +339,17 @@ class _CopyBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = switch (kind) {
-      TicketCopyKind.reprint => 'RECIBO DE COPIA',
-      TicketCopyKind.resend => 'BOLETO REENVIADO',
+      TicketCopyKind.reprint => 'Recibo de copia',
+      TicketCopyKind.resend => 'Boleto reenviado',
       TicketCopyKind.original => '',
     };
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-      decoration: BoxDecoration(
+    return Text(
+      label,
+      textAlign: TextAlign.center,
+      style: const TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
         color: _kTicketBrandColor,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        label,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 1.5,
-          color: Colors.white,
-        ),
       ),
     );
   }
