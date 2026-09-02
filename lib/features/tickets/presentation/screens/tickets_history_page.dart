@@ -10,6 +10,7 @@ import '../../../../core/utils/time_format.dart';
 import '../../../../core/widgets/date_range_field.dart';
 import '../../../../core/widgets/game_draw_filter_bar.dart';
 import '../../../games/domain/entities/game.dart';
+import '../../../games/presentation/screens/game_detail_page.dart';
 import '../../../games/presentation/state/games_controller.dart';
 import '../../../printer/domain/entities/ticket_payload.dart' as printer;
 import '../../../printer/presentation/state/printer_controller.dart';
@@ -316,6 +317,8 @@ class _TicketMenu extends ConsumerWidget {
       icon: const Icon(Icons.more_vert),
       onSelected: (value) async {
         switch (value) {
+          case 'repeat':
+            await _repeat(context, ref);
           case 'reprint':
             await _reprint(context, ref);
           case 'resend':
@@ -325,6 +328,13 @@ class _TicketMenu extends ConsumerWidget {
         }
       },
       itemBuilder: (context) => [
+        const PopupMenuItem(
+          value: 'repeat',
+          child: ListTile(
+            leading: Icon(Icons.replay),
+            title: Text('Repetir boleto'),
+          ),
+        ),
         const PopupMenuItem(
           value: 'reprint',
           child: ListTile(
@@ -351,15 +361,89 @@ class _TicketMenu extends ConsumerWidget {
     );
   }
 
+  Future<void> _repeat(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final currentGame = game;
+    if (currentGame == null) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('No se encontró el juego del boleto')),
+      );
+      return;
+    }
+
+    final either = await getIt<TicketsRepository>().findById(ticket.id);
+    if (!context.mounted) return;
+
+    await either.match(
+      (failure) async {
+        messenger.showSnackBar(SnackBar(
+          content: Text('No se pudo cargar el boleto: ${failure.message}'),
+        ));
+      },
+      (detail) async {
+        final allGames = ref.read(gamesControllerProvider).value ?? const [];
+        final compatible = allGames
+            .where((g) => g.type == currentGame.type && g.id != currentGame.id)
+            .toList();
+
+        if (!context.mounted) return;
+
+        if (compatible.isEmpty) {
+          messenger.showSnackBar(
+            const SnackBar(
+              content: Text('No hay otros juegos compatibles para repetir'),
+            ),
+          );
+          return;
+        }
+
+        final lines = detail.lines
+            .map((l) => (label: l.label.trim(), amount: l.amount))
+            .toList();
+
+        await showModalBottomSheet<void>(
+          context: context,
+          builder: (sheetCtx) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  child: Text(
+                    'Repetir en',
+                    style: Theme.of(sheetCtx)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                ...compatible.map(
+                  (g) => ListTile(
+                    leading: const Icon(Icons.casino_outlined),
+                    title: Text(g.name),
+                    onTap: () {
+                      Navigator.of(sheetCtx).pop();
+                      context.push(
+                        '/juegos/${g.id}',
+                        extra: GameDetailArgs(game: g, initialLines: lines),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _reprint(BuildContext context, WidgetRef ref) async {
     final messenger = ScaffoldMessenger.of(context);
-    // Nombramos la variable `printerState` (no `printer`) para no sombrear
-    // el alias del import `printer.*` que usamos abajo para el enum
-    // `TicketCopyKind`. Con `printer` como variable local, dentro del
-    // closure de `either.match` el compilador resolvía `printer.TicketCopyKind`
-    // contra `PrinterState` y disparaba `undefined_getter`.
-    final printerState = ref.read(printerControllerProvider);
-    if (!printerState.isConnected) {
+    final printer = ref.read(printerControllerProvider);
+    if (!printer.isConnected) {
       messenger.showSnackBar(const SnackBar(
         content: Text(
           'No hay impresora conectada. Ve a Configuración → Impresora.',
@@ -380,7 +464,6 @@ class _TicketMenu extends ConsumerWidget {
         final payload = _buildPayload(
           detail: detail,
           seller: ref.read(currentUserProvider)?.name,
-          copyKind: printer.TicketCopyKind.reprint,
         );
         await ref.read(printerControllerProvider.notifier).printTicket(payload);
         if (!context.mounted) return;
@@ -413,7 +496,6 @@ class _TicketMenu extends ConsumerWidget {
         final payload = _buildPayload(
           detail: detail,
           seller: ref.read(currentUserProvider)?.name,
-          copyKind: printer.TicketCopyKind.resend,
         );
         if (!context.mounted) return;
         final shared = await const TicketImageShareService()
@@ -428,14 +510,12 @@ class _TicketMenu extends ConsumerWidget {
     );
   }
 
-  // Los reprints y reenvíos comparten estructura con la venta original;
-  // el flag `copyKind` es lo único que cambia — el header pinta un
-  // banner arriba (`RECIBO DE COPIA` / `BOLETO REENVIADO`) para que el
-  // cliente no confunda la copia con una venta nueva.
+  // Los reprints y reenvíos generan el ticket idéntico al original — sin
+  // marca de "reimpresión" ni "reenvío" — para que el cliente lo perciba
+  // como el mismo boleto.
   printer.TicketPayload _buildPayload({
     required TicketDetail detail,
     required String? seller,
-    required printer.TicketCopyKind copyKind,
   }) {
     final summary = detail.summary;
     return printer.TicketPayload(
@@ -455,12 +535,7 @@ class _TicketMenu extends ConsumerWidget {
       date: summary.createdAt,
       drawAt: summary.drawAt,
       seller: seller,
-      // El backend resuelve `salePointName` en el detail — llega con el
-      // fetch de `findById`. Sin este campo, la reimpresión y el reenvío
-      // salían sin la línea "Puesto:" en el header.
-      salePoint: summary.salePointName,
       client: summary.client,
-      copyKind: copyKind,
     );
   }
 }
@@ -545,9 +620,9 @@ class _StatusChip extends StatelessWidget {
     if (ticket.isWinner) {
       return _Chip(
         text: 'Ganador',
-        bg: Colors.purple.shade50,
-        border: Colors.purple.shade300,
-        fg: Colors.purple.shade800,
+        bg: Colors.amber.shade50,
+        border: Colors.amber.shade300,
+        fg: Colors.amber.shade800,
       );
     }
     return _Chip(
