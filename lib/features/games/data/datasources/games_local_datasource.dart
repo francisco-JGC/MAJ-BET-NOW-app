@@ -16,7 +16,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
 
   final SharedPreferences prefs;
 
-  static const _cacheKey = 'games.cache_v1';
+  static const _cacheKey = 'games.cache_v2';
   static const _basePath = 'assets/images/games';
 
   @override
