@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/entities/game.dart';
 
@@ -83,95 +82,10 @@ class _Content extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final assetPath = 'assets/images/games/${game.slug}.webp';
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        Image.asset(
-          assetPath,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stack) => _Fallback(game: game),
-        ),
-        const _VignetteOverlay(),
-        _GameLabel(name: game.name),
-      ],
-    );
-  }
-}
-
-class _VignetteOverlay extends StatelessWidget {
-  const _VignetteOverlay();
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return CustomPaint(
-          size: Size(constraints.maxWidth, constraints.maxHeight),
-          painter: const _VignettePainter(),
-        );
-      },
-    );
-  }
-}
-
-class _VignettePainter extends CustomPainter {
-  const _VignettePainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    final paint = Paint()
-      ..shader = const LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [
-          Color(0x99000000),
-          Color(0x00000000),
-          Color(0x00000000),
-          Color(0x99000000),
-        ],
-        stops: [0.0, 0.38, 0.62, 1.0],
-      ).createShader(rect);
-    canvas.drawRect(rect, paint);
-  }
-
-  @override
-  bool shouldRepaint(_VignettePainter old) => false;
-}
-
-class _GameLabel extends StatelessWidget {
-  const _GameLabel({required this.name});
-
-  final String name;
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text(
-            name.toUpperCase(),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.cinzel(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
-              shadows: [
-                Shadow(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  blurRadius: 6,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return Image.asset(
+      'assets/images/games/${game.slug}.webp',
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stack) => _Fallback(game: game),
     );
   }
 }
@@ -216,7 +130,7 @@ class _Fallback extends StatelessWidget {
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: GoogleFonts.cinzel(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
               fontWeight: FontWeight.w700,
