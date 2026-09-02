@@ -30,6 +30,7 @@ import '../../../sales/presentation/widgets/combo_line_form.dart';
 import '../../../sales/presentation/widgets/combo_random_form.dart';
 import '../../../sales/presentation/widgets/date_bet_tile.dart';
 import '../../../sales/presentation/widgets/date_line_form.dart';
+import '../../../sales/presentation/widgets/date_random_form.dart';
 import '../../../sales/presentation/widgets/gana3_bet_tile.dart';
 import '../../../sales/presentation/widgets/gana3_line_form.dart';
 import '../../../sales/presentation/widgets/gana3_random_form.dart';
@@ -369,6 +370,21 @@ class _DateGameView extends ConsumerWidget {
                     month: r.month,
                     amount: r.amount,
                   );
+                  Navigator.of(ctx).pop();
+                },
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.casino_outlined),
+            tooltip: 'Registrar aleatorio',
+            onPressed: () => showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              showDragHandle: true,
+              builder: (ctx) => DateRandomForm(
+                onSubmit: (r) {
+                  controller.addRandom(count: r.count, amount: r.amount);
                   Navigator.of(ctx).pop();
                 },
               ),

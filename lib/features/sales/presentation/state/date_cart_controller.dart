@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/date_bet.dart';
@@ -28,6 +30,25 @@ class DateCartController extends Notifier<DateCartState> {
       client: _clean(client) ?? state.client,
     );
     return AddBetOutcome.added;
+  }
+
+  void addRandom({required int count, required int amount}) {
+    if (count < 1 || amount < 1) return;
+    final random = Random();
+    // Pool completo: días 1-31 × meses 1-12 = 372 combinaciones.
+    final pool = [
+      for (var m = 1; m <= 12; m++)
+        for (var d = 1; d <= 31; d++) (day: d, month: m),
+    ]..shuffle(random);
+    final target = count.clamp(1, pool.length);
+    final incoming = pool
+        .take(target)
+        .map((p) => DateBet(day: p.day, month: p.month, amount: amount))
+        .toList();
+    state = DateCartState(
+      bets: _merge(state.bets, incoming),
+      client: state.client,
+    );
   }
 
   void addRange({
