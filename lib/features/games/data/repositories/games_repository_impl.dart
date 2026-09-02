@@ -59,7 +59,7 @@ class GamesRepositoryImpl implements GamesRepository {
 
   List<Game> _withLocalImages(List<Game> games) {
     return games.map((g) {
-      final localPath = _localImages[g.id];
+      final localPath = _localImages[g.slug];
       if (localPath == null || g.imagePath != null) return g;
       return Game(
         id: g.id,
