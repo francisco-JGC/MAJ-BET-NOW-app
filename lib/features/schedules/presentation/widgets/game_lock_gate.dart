@@ -41,63 +41,65 @@ class _LockOverlay extends StatelessWidget {
     final nextDrawAt = state.nextDrawAt;
     final nightly = state.isNightly;
     return Positioned.fill(
-      child: ColoredBox(
-        color: const Color(0xB2000000),
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Container(
+      child: AbsorbPointer(
+        child: ColoredBox(
+          color: const Color(0xB2000000),
+          child: Center(
+            child: Padding(
               padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    nightly ? Icons.nights_stay : Icons.lock_clock,
-                    size: 56,
-                    color: nightly ? Colors.indigo : Colors.purple,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    nightly ? 'Cierre nocturno' : 'Sorteo en curso',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      nightly ? Icons.nights_stay : Icons.lock_clock,
+                      size: 56,
+                      color: nightly ? Colors.indigo : Colors.purple,
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  if (!nightly && drawAt != null)
+                    const SizedBox(height: 16),
                     Text(
-                      'Sorteo de las ${formatTime12h(drawAt)}',
-                      style: const TextStyle(fontSize: 15),
-                      textAlign: TextAlign.center,
-                    ),
-                  const SizedBox(height: 8),
-                  Text(
-                    nightly
-                        ? 'Las ventas están cerradas hasta mañana a las 6:00 AM.'
-                        : 'No se pueden ingresar boletos durante la ventana de bloqueo.',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.black87),
-                  ),
-                  const SizedBox(height: 16),
-                  if (reopenAt != null)
-                    _CountdownText(target: reopenAt, longFormat: nightly),
-                  const SizedBox(height: 16),
-                  if (nextDrawAt != null)
-                    Text(
-                      nightly
-                          ? 'Próximo sorteo del siguiente día: ${formatTime12h(nextDrawAt)}'
-                          : 'Próximo sorteo: ${formatTime12h(nextDrawAt)}',
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                        fontSize: 13,
+                      nightly ? 'Cierre nocturno' : 'Sorteo en curso',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
-                ],
+                    const SizedBox(height: 12),
+                    if (!nightly && drawAt != null)
+                      Text(
+                        'Sorteo de las ${formatTime12h(drawAt)}',
+                        style: const TextStyle(fontSize: 15),
+                        textAlign: TextAlign.center,
+                      ),
+                    const SizedBox(height: 8),
+                    Text(
+                      nightly
+                          ? 'Las ventas están cerradas hasta mañana a las 6:00 AM.'
+                          : 'No se pueden ingresar boletos durante la ventana de bloqueo.',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(color: Colors.black87),
+                    ),
+                    const SizedBox(height: 16),
+                    if (reopenAt != null)
+                      _CountdownText(target: reopenAt, longFormat: nightly),
+                    const SizedBox(height: 16),
+                    if (nextDrawAt != null)
+                      Text(
+                        nightly
+                            ? 'Próximo sorteo del siguiente día: ${formatTime12h(nextDrawAt)}'
+                            : 'Próximo sorteo: ${formatTime12h(nextDrawAt)}',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 13,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),

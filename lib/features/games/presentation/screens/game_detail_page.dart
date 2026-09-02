@@ -1554,6 +1554,9 @@ Future<void> _persistAndPrintInner(
 }) async {
   final messenger = ScaffoldMessenger.of(context);
   final salePoint = ref.read(activeSalePointProvider).selected;
+  // Forzar reevaluación inmediata antes de leer el estado — el tick de 5s
+  // puede estar desactualizado si el cutoff ocurrió hace poco.
+  ref.read(gameLockControllerProvider(game.id).notifier).recompute();
   final lock = ref.read(gameLockControllerProvider(game.id));
   final billingMethod =
       ref.read(settingsControllerProvider).value ?? BillingMethod.bluetoothPrinter;

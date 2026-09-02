@@ -10,7 +10,7 @@ import '../../domain/entities/draw_schedule.dart';
 import '../../domain/repositories/schedules_repository.dart';
 
 const _postDrawGraceMinutes = 3;
-const _tickInterval = Duration(seconds: 15);
+const _tickInterval = Duration(seconds: 5);
 
 /// Cierre nocturno: después del último sorteo del día, el juego queda
 /// bloqueado hasta esta hora (business time, Managua) del día siguiente.
@@ -101,6 +101,10 @@ class GameLockController extends Notifier<GameLockState> {
       },
     );
   }
+
+  /// Fuerza una reevaluación inmediata del estado de bloqueo. Llamar antes
+  /// de leer el estado para garantizar que no está desactualizado.
+  void recompute() => _recompute();
 
   void _recompute() {
     final schedules = _schedules;
