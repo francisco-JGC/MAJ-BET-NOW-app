@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency.dart';
 import '../../../../core/utils/time_format.dart';
 import '../../../games/domain/entities/game.dart';
@@ -124,73 +126,133 @@ class _DetailView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final ticket = detail.summary;
-    final saleFmt = DateFormat('dd/MM/yyyy');
+    final saleDateFmt = DateFormat('dd/MM/yyyy');
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
-        // El header (juego, folio, chip, datos) se centra elemento por
-        // elemento con `textAlign` + `Center`. La sección "Números
-        // vendidos" y el total conservan su layout original en columnas.
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(
-            width: double.infinity,
-            child: Text(
-              game?.name ?? '—',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
+          // Juego
+          Text(
+            game?.name ?? '—',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.headlineSmall
+                ?.copyWith(fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: 4),
-          SizedBox(
-            width: double.infinity,
-            child: Text(
-              '#${ticket.folio}',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(color: Colors.grey.shade700),
-            ),
+          const SizedBox(height: 6),
+          // Folio con icono copiar
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '#${ticket.folio}',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(color: Colors.grey.shade700),
+              ),
+              const SizedBox(width: 6),
+              GestureDetector(
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: ticket.folio));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Folio copiado'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+                child: Icon(
+                  Icons.copy_outlined,
+                  size: 16,
+                  color: Colors.grey.shade500,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 8),
-          Center(child: _StatusChip(status: ticket.status)),
+          _StatusChip(status: ticket.status),
           const SizedBox(height: 16),
+          // Datos en el mismo orden que el ticket impreso
           _InfoRow(
-            label: 'Venta',
-            value: '${saleFmt.format(ticket.createdAt.toLocal())} '
+            label: 'Fecha',
+            value: '${saleDateFmt.format(ticket.createdAt.toLocal())} '
                 '· ${formatTime12h(ticket.createdAt)}',
           ),
           _InfoRow(
             label: 'Sorteo',
-            value: '${saleFmt.format(ticket.drawAt.toLocal())} '
-                '· ${formatTime12h(ticket.drawAt)}',
+            value: formatTime12h(ticket.drawAt),
           ),
+          _InfoRow(
+            label: 'Cliente',
+            value: ticket.client?.isNotEmpty == true ? ticket.client! : '—',
+          ),
+          if (ticket.sellerName != null && ticket.sellerName!.isNotEmpty)
+            _InfoRow(label: 'Vendedor', value: ticket.sellerName!),
           if (ticket.salePointName != null && ticket.salePointName!.isNotEmpty)
-            _InfoRow(label: 'Sucursal', value: ticket.salePointName!),
-          if (ticket.client != null && ticket.client!.isNotEmpty)
-            _InfoRow(label: 'Cliente', value: ticket.client!),
+            _InfoRow(label: 'Puesto', value: ticket.salePointName!),
           if (ticket.isVoided && ticket.voidedReason != null)
             _InfoRow(label: 'Motivo anulación', value: ticket.voidedReason!),
           const Divider(height: 32),
-          Text(
-            'Números vendidos (${detail.lines.length})',
-            style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.w700),
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppTheme.primary,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Row(
+              children: [
+                Expanded(
+                  flex: 4,
+                  child: Text(
+                    'Apuesta',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: Text(
+                    'Monto',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: Text(
+                    'Premio',
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           ..._buildLines(context, detail.lines),
-          const Divider(height: 32),
-          Row(
-            children: [
-              Text('Total', style: theme.textTheme.titleMedium),
-              const Spacer(),
-              Text(
-                kCurrencyFormat.format(ticket.total),
-                style: theme.textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.w700),
+          const SizedBox(height: 16),
+          Center(
+            child: Text(
+              'TOTAL: ${kCurrencyFormat.format(ticket.total)}',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.primary,
               ),
-            ],
+            ),
           ),
         ],
       ),
@@ -205,50 +267,53 @@ class _DetailView extends StatelessWidget {
       if (line.subGameName != null && line.subGameName != currentSub) {
         currentSub = line.subGameName;
         rows.add(Padding(
-          padding: const EdgeInsets.only(top: 12, bottom: 4),
+          padding: const EdgeInsets.only(top: 10, bottom: 2),
           child: Text(
-            currentSub!,
+            '— ${currentSub!.toUpperCase()} —',
+            textAlign: TextAlign.center,
             style: theme.textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w700,
-              color: theme.colorScheme.primary,
+              color: AppTheme.primary,
             ),
           ),
         ));
       }
       rows.add(Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(vertical: 5),
         child: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(6),
-              ),
+            Expanded(
+              flex: 4,
               child: Text(
                 line.label,
                 style: const TextStyle(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                   fontSize: 16,
                 ),
               ),
             ),
-            const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    kCurrencyFormat.format(line.amount),
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                  Text(
-                    'Premio: ${kCurrencyFormat.format(line.prize)}',
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: Colors.grey.shade600),
-                  ),
-                ],
+              flex: 3,
+              child: Text(
+                kCurrencyFormat.format(line.amount),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.primary,
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 3,
+              child: Text(
+                kCurrencyFormat.format(line.prize),
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.primary,
+                ),
               ),
             ),
           ],

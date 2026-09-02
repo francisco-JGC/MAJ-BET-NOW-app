@@ -19,6 +19,7 @@ class TicketSummary extends Equatable {
     required this.gameId,
     required this.salePointId,
     required this.salePointName,
+    required this.sellerName,
     required this.client,
     required this.status,
     required this.total,
@@ -39,6 +40,8 @@ class TicketSummary extends Equatable {
   /// Nombre visible de la sucursal. `null` en respuestas de listados que
   /// no lo resuelven para evitar N+1 en el backend — el detail sí lo trae.
   final String? salePointName;
+  /// Nombre del vendedor. Solo disponible en el detalle del boleto.
+  final String? sellerName;
   final String? client;
   final TicketStatus status;
   final int total;
@@ -71,6 +74,7 @@ class TicketSummary extends Equatable {
         gameId,
         salePointId,
         salePointName,
+        sellerName,
         client,
         status,
         total,
