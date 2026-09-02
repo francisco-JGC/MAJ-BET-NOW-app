@@ -89,21 +89,13 @@ class _InfoBlock extends StatelessWidget {
     // como sorteo de 9pm porque UTC-6 nunca se aplicaba.
     final saleDateFmt = DateFormat('dd/MM/yyyy');
     final timeFmt = DateFormat('h:mm a', 'en_US');
-    final shortDateFmt = DateFormat('dd/MM');
     final saleLocal = payload.date.toLocal();
     final saleFormatted =
         '${saleDateFmt.format(saleLocal)} ${timeFmt.format(saleLocal).toLowerCase()}';
 
     String? drawFormatted;
     if (payload.drawAt != null) {
-      final drawLocal = payload.drawAt!.toLocal();
-      final now = DateTime.now();
-      final sameDay = drawLocal.year == now.year &&
-          drawLocal.month == now.month &&
-          drawLocal.day == now.day;
-      final drawTime = timeFmt.format(drawLocal).toLowerCase();
-      drawFormatted =
-          sameDay ? drawTime : '${shortDateFmt.format(drawLocal)} $drawTime';
+      drawFormatted = timeFmt.format(payload.drawAt!.toLocal()).toLowerCase();
     }
 
     // Cliente es una propiedad opcional cuyo LABEL siempre debe aparecer
@@ -168,31 +160,38 @@ class _LinesTable extends StatelessWidget {
     const headerStyle = TextStyle(
       fontSize: 13,
       fontWeight: FontWeight.w700,
-      color: _kTicketBrandColor,
+      color: Colors.white,
     );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Row(
-          children: [
-            Expanded(flex: 4, child: Text('Apuesta', style: headerStyle)),
-            Expanded(
-              flex: 3,
-              child: Text(
-                'Monto',
-                textAlign: TextAlign.right,
-                style: headerStyle,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          decoration: BoxDecoration(
+            color: _kTicketBrandColor,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: const Row(
+            children: [
+              Expanded(flex: 4, child: Text('Apuesta', style: headerStyle)),
+              Expanded(
+                flex: 3,
+                child: Text(
+                  'Monto',
+                  textAlign: TextAlign.right,
+                  style: headerStyle,
+                ),
               ),
-            ),
-            Expanded(
-              flex: 4,
-              child: Text(
-                'Premio',
-                textAlign: TextAlign.right,
-                style: headerStyle,
+              Expanded(
+                flex: 4,
+                child: Text(
+                  'Premio',
+                  textAlign: TextAlign.right,
+                  style: headerStyle,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 10),
         for (var i = 0; i < lines.length; i++) ...[

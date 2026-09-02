@@ -149,7 +149,6 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     final profile = await CapabilityProfile.load();
     final g = Generator(PaperSize.mm58, profile);
     final dateOnly = DateFormat('dd/MM/yyyy');
-    final shortDate = DateFormat('dd/MM');
     // `.toLocal()` es obligatorio: los DateTime que vienen del backend
     // (reimpresiones, reenvíos) llegan en UTC. Sin convertir a hora local
     // el ticket físico salía con la hora adelantada 6h (offset UTC-6 de
@@ -159,15 +158,6 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
       final local = d.toLocal();
       final t = DateFormat('h:mm a', 'en_US').format(local).toLowerCase();
       return '${dateOnly.format(local)} $t';
-    }
-    String formatDrawHint(DateTime d) {
-      final local = d.toLocal();
-      final t = DateFormat('h:mm a', 'en_US').format(local).toLowerCase();
-      final now = DateTime.now();
-      final sameDay = local.year == now.year &&
-          local.month == now.month &&
-          local.day == now.day;
-      return sameDay ? t : '${shortDate.format(local)} $t';
     }
     final money = kAmountFormat;
 
@@ -229,21 +219,16 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
         ...g.emptyLines(1),
       ],
       ...g.text('Juego: $gameName', styles: infoCenter),
-      ...g.emptyLines(1),
       ...g.text('Folio: ${p.folio}', styles: infoCenter),
-      ...g.emptyLines(1),
       ...g.text('Fecha: ${formatDateTime(p.date)}', styles: infoCenter),
-      ...g.emptyLines(1),
-      if (p.drawAt != null) ...[
-        ...g.text('Sorteo: ${formatDrawHint(p.drawAt!)}', styles: infoCenter),
-        ...g.emptyLines(1),
-      ],
+      if (p.drawAt != null)
+        ...g.text(
+          'Sorteo: ${DateFormat('h:mm a', 'en_US').format(p.drawAt!.toLocal()).toLowerCase()}',
+          styles: infoCenter,
+        ),
       ...g.text('Cliente: $client', styles: infoCenter),
-      ...g.emptyLines(1),
-      if (seller.isNotEmpty) ...[
+      if (seller.isNotEmpty)
         ...g.text('Vendedor: $seller', styles: infoCenter),
-        ...g.emptyLines(1),
-      ],
       if (salePoint.isNotEmpty)
         ...g.text('Puesto: $salePoint', styles: infoCenter),
       ...g.emptyLines(1),
