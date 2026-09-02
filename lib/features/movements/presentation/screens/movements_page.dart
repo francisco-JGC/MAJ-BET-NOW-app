@@ -399,11 +399,7 @@ class _DetailCard extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
               decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.primary, AppTheme.accent],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ),
+                color: AppTheme.primary,
               ),
               child: const Row(
                 children: [

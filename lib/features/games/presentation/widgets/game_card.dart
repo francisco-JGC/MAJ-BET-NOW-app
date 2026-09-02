@@ -92,38 +92,52 @@ class _Content extends StatelessWidget {
           fit: BoxFit.cover,
           errorBuilder: (context, error, stack) => _Fallback(game: game),
         ),
-        const Positioned.fill(child: _VerticalVignette()),
+        const _VignetteOverlay(),
         _GameLabel(name: game.name),
       ],
     );
   }
 }
 
-// Degradado negro→transparente desde arriba al centro,
-// y transparente→negro desde el centro hacia abajo.
-class _VerticalVignette extends StatelessWidget {
-  const _VerticalVignette();
+class _VignetteOverlay extends StatelessWidget {
+  const _VignetteOverlay();
 
   @override
   Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.black.withValues(alpha: 0.4),
-              Colors.black.withValues(alpha: 0.05),
-              Colors.black.withValues(alpha: 0.05),
-              Colors.black.withValues(alpha: 0.4),
-            ],
-            stops: const [0.0, 0.35, 0.65, 1.0],
-          ),
-        ),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return CustomPaint(
+          size: Size(constraints.maxWidth, constraints.maxHeight),
+          painter: const _VignettePainter(),
+        );
+      },
     );
   }
+}
+
+class _VignettePainter extends CustomPainter {
+  const _VignettePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final paint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0x99000000),
+          Color(0x00000000),
+          Color(0x00000000),
+          Color(0x99000000),
+        ],
+        stops: [0.0, 0.38, 0.62, 1.0],
+      ).createShader(rect);
+    canvas.drawRect(rect, paint);
+  }
+
+  @override
+  bool shouldRepaint(_VignettePainter old) => false;
 }
 
 class _GameLabel extends StatelessWidget {
