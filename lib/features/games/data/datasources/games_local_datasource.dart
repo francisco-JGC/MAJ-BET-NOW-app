@@ -50,7 +50,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         name: 'Diaria',
         type: GameType.regular,
         exactMultiplier: 80,
-        imagePath: '$_basePath/diaria.jpeg',
+        imagePath: '$_basePath/diaria.webp',
         orderIndex: 1,
       ),
       GameModel(
@@ -60,7 +60,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         type: GameType.threeDigit,
         exactMultiplier: 600,
         easyMultiplier: 100,
-        imagePath: '$_basePath/juega3.jpeg',
+        imagePath: '$_basePath/juega3.webp',
         orderIndex: 2,
       ),
       GameModel(
@@ -69,7 +69,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         name: 'Fechas',
         type: GameType.date,
         exactMultiplier: 200,
-        imagePath: '$_basePath/fechas.jpeg',
+        imagePath: '$_basePath/fechas.webp',
         orderIndex: 3,
       ),
       GameModel(
@@ -78,7 +78,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         name: 'Combo',
         type: GameType.fourDigit,
         exactMultiplier: 4000,
-        imagePath: '$_basePath/combo.jpeg',
+        imagePath: '$_basePath/combo.webp',
         orderIndex: 4,
       ),
       GameModel(
@@ -87,7 +87,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         name: 'Terminación 2',
         type: GameType.regular,
         exactMultiplier: 80,
-        imagePath: '$_basePath/terminacion2.jpeg',
+        imagePath: '$_basePath/terminacion2.webp',
         orderIndex: 5,
       ),
       GameModel(
@@ -96,7 +96,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         name: 'Tica',
         type: GameType.regular,
         exactMultiplier: 80,
-        imagePath: '$_basePath/tica.jpeg',
+        imagePath: '$_basePath/tica.webp',
         orderIndex: 6,
       ),
       GameModel(
@@ -106,7 +106,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         type: GameType.threeDigit,
         exactMultiplier: 600,
         easyMultiplier: 100,
-        imagePath: '$_basePath/tresmonazo.jpeg',
+        imagePath: '$_basePath/tresmonazo.webp',
         orderIndex: 7,
       ),
       GameModel(
@@ -115,7 +115,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         name: 'Hondureña',
         type: GameType.regular,
         exactMultiplier: 80,
-        imagePath: '$_basePath/hondurena.jpeg',
+        imagePath: '$_basePath/hondurena.webp',
         orderIndex: 8,
       ),
       GameModel(
@@ -125,7 +125,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         type: GameType.threeDigit,
         exactMultiplier: 600,
         easyMultiplier: 100,
-        imagePath: '$_basePath/gana3.jpeg',
+        imagePath: '$_basePath/gana3.webp',
         orderIndex: 9,
       ),
       GameModel(
@@ -134,7 +134,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         name: 'Primera',
         type: GameType.regular,
         exactMultiplier: 80,
-        imagePath: '$_basePath/primera.jpeg',
+        imagePath: '$_basePath/primera.webp',
         orderIndex: 10,
       ),
       GameModel(
@@ -143,7 +143,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         name: 'Salvadoreña',
         type: GameType.regular,
         exactMultiplier: 80,
-        imagePath: '$_basePath/salvadorena.jpeg',
+        imagePath: '$_basePath/salvadorena.webp',
         orderIndex: 11,
       ),
       GameModel(
@@ -152,7 +152,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         name: 'Rifas',
         type: GameType.regular,
         exactMultiplier: 80,
-        imagePath: '$_basePath/rifas.jpeg',
+        imagePath: '$_basePath/rifas.webp',
         orderIndex: 12,
       ),
       GameModel(
@@ -160,7 +160,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         slug: 'multisorteo',
         name: 'Multi Sorteo',
         type: GameType.multiSorteo,
-        imagePath: '$_basePath/multisorteo.jpeg',
+        imagePath: '$_basePath/multisorteo.webp',
         orderIndex: 13,
       ),
     ];

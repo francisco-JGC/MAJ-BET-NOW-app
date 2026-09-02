@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/entities/game.dart';
 
@@ -93,28 +94,69 @@ class _Content extends StatelessWidget {
           fit: BoxFit.cover,
           errorBuilder: (_, _, _) => _Fallback(game: game),
         ),
-        const _Vignette(),
+        const _VerticalVignette(),
+        _GameLabel(name: game.name),
       ],
     );
   }
 }
 
-class _Vignette extends StatelessWidget {
-  const _Vignette();
+// Degradado negro→transparente desde arriba al centro,
+// y transparente→negro desde el centro hacia abajo.
+class _VerticalVignette extends StatelessWidget {
+  const _VerticalVignette();
 
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
       child: DecoratedBox(
         decoration: BoxDecoration(
-          gradient: RadialGradient(
-            radius: 0.85,
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
+              Colors.black.withValues(alpha: 0.80),
               Colors.transparent,
-              Colors.black.withValues(alpha: 0.35),
+              Colors.transparent,
               Colors.black.withValues(alpha: 0.80),
             ],
-            stops: const [0.40, 0.75, 1.0],
+            stops: const [0.0, 0.35, 0.65, 1.0],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GameLabel extends StatelessWidget {
+  const _GameLabel({required this.name});
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text(
+            name.toUpperCase(),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.cinzel(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -159,14 +201,15 @@ class _Fallback extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(10),
           child: Text(
-            game.name,
+            game.name.toUpperCase(),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: GoogleFonts.cinzel(
               color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.2,
             ),
           ),
         ),
