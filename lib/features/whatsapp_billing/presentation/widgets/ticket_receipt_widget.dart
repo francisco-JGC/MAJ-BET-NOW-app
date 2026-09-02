@@ -21,10 +21,7 @@ const _kTicketBrandColor = AppTheme.primaryDark;
 /// Se envuelve en `RepaintBoundary` desde el llamador; acá solo definimos
 /// la vista pura.
 class TicketReceiptWidget extends StatelessWidget {
-  const TicketReceiptWidget({
-    required this.payload,
-    super.key,
-  });
+  const TicketReceiptWidget({required this.payload, super.key});
 
   final TicketPayload payload;
 
@@ -33,7 +30,7 @@ class TicketReceiptWidget extends StatelessWidget {
     return Material(
       color: Colors.white,
       child: Container(
-        width: 460,
+        width: 380,
         padding: const EdgeInsets.all(18),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -45,16 +42,10 @@ class TicketReceiptWidget extends StatelessWidget {
             ],
             _InfoBlock(payload: payload),
             const SizedBox(height: 10),
-            const _DashedDivider(),
-            const SizedBox(height: 8),
             _LinesTable(lines: payload.lines),
-            const SizedBox(height: 8),
-            const _DashedDivider(),
             const SizedBox(height: 10),
             _TotalRow(total: payload.total),
             const SizedBox(height: 10),
-            const _SolidDivider(),
-            const SizedBox(height: 8),
             const _CenteredNote(
               text: 'Boleto valido para 1 sorteo',
               bold: true,
@@ -193,12 +184,11 @@ class _LinesTable extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 6),
         for (var i = 0; i < lines.length; i++) ...[
           if (lines[i].subGameName != null &&
-              (i == 0 ||
-                  lines[i - 1].subGameName != lines[i].subGameName)) ...[
-            if (i > 0) const SizedBox(height: 8),
+              (i == 0 || lines[i - 1].subGameName != lines[i].subGameName)) ...[
+            if (i > 0) const SizedBox(height: 4),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 3),
               child: Text(
@@ -210,7 +200,8 @@ class _LinesTable extends StatelessWidget {
                 ),
               ),
             ),
-          ],
+          ] else if (i > 0)
+            const Divider(height: 1, thickness: 0.5, color: Color(0x33000000)),
           _LineRow(line: lines[i]),
         ],
       ],
@@ -251,7 +242,7 @@ class _LineRow extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
-                color: _kTicketBrandColor,
+                color: Colors.black,
                 fontFeatures: [FontFeature.tabularFigures()],
               ),
             ),
@@ -264,7 +255,7 @@ class _LineRow extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
-                color: _kTicketBrandColor,
+                color: Colors.black,
                 fontFeatures: [FontFeature.tabularFigures()],
               ),
             ),
@@ -337,18 +328,6 @@ class _QrBlock extends StatelessWidget {
   }
 }
 
-class _SolidDivider extends StatelessWidget {
-  const _SolidDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 1,
-      color: _kTicketBrandColor,
-    );
-  }
-}
-
 /// Banner que se pinta arriba del ticket cuando la venta ya no es la
 /// original (reimpresión o reenvío por WhatsApp). Deja claro al cliente
 /// que el papel/imagen que está viendo es una COPIA de una venta previa
@@ -380,36 +359,6 @@ class _CopyBanner extends StatelessWidget {
           color: Colors.white,
         ),
       ),
-    );
-  }
-}
-
-/// Divisor de guiones (`- - -`) que "encierra" la tabla de números arriba y
-/// abajo. Guiones en vez de línea sólida porque replica visualmente el
-/// carácter '-' que imprime la impresora térmica (ver `_dashedLine` en
-/// `printer_bluetooth_datasource`).
-class _DashedDivider extends StatelessWidget {
-  const _DashedDivider();
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        const dashWidth = 6.0;
-        const dashSpace = 4.0;
-        final count = (constraints.maxWidth / (dashWidth + dashSpace)).floor();
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(
-            count,
-            (_) => Container(
-              width: dashWidth,
-              height: 1.5,
-              color: _kTicketBrandColor,
-            ),
-          ),
-        );
-      },
     );
   }
 }

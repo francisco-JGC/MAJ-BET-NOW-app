@@ -177,8 +177,6 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
       height: PosTextSize.size2,
       align: PosAlign.right,
     );
-    PosColumn gutter() => PosColumn(text: '', width: 1);
-
     // Sanitizamos campos alimentados por el usuario (nombre del vendedor,
     // sucursal, cliente, footer) porque el codec ESC/POS rechaza codepoints
     // fuera del codepage (emojis, símbolos raros) con `ArgumentError:
@@ -234,11 +232,9 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
       ...g.emptyLines(1),
       ..._dashedLine(g),
       ...g.row([
-        gutter(),
-        PosColumn(text: 'Apuesta', width: 3, styles: infoStyle),
+        PosColumn(text: 'Apuesta', width: 5, styles: infoStyle),
         PosColumn(text: 'Monto', width: 3, styles: infoRight),
         PosColumn(text: 'Premio', width: 4, styles: infoRight),
-        gutter(),
       ]),
       ...g.emptyLines(1),
       for (var i = 0; i < p.lines.length; i++) ...[
@@ -252,8 +248,7 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
           ),
         ],
         ...g.row([
-          gutter(),
-          PosColumn(text: p.lines[i].number, width: 3, styles: numberStyle),
+          PosColumn(text: p.lines[i].number, width: 5, styles: numberStyle),
           PosColumn(
             text: money.format(p.lines[i].amount),
             width: 3,
@@ -264,7 +259,6 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
             width: 4,
             styles: numberRight,
           ),
-          gutter(),
         ]),
       ],
       ..._dashedLine(g),
@@ -274,8 +268,6 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
         styles: const PosStyles(
           align: PosAlign.center,
           bold: true,
-          height: PosTextSize.size2,
-          width: PosTextSize.size2,
         ),
       ),
       ...g.emptyLines(1),
