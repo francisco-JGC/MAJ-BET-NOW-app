@@ -253,12 +253,12 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
           ),
         ]),
       ],
+      ...g.emptyLines(1),
       ...g.text(
         'TOTAL: ${kCurrencyFormat.format(p.total)}',
         styles: const PosStyles(
           align: PosAlign.center,
           bold: true,
-          height: PosTextSize.size2,
         ),
       ),
       ...g.emptyLines(1),
