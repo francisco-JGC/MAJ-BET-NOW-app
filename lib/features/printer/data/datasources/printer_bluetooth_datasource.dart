@@ -170,13 +170,16 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     const numberStyle = PosStyles(
       bold: true,
       height: PosTextSize.size2,
-      width: PosTextSize.size2,
       align: PosAlign.left,
+    );
+    const numberCenter = PosStyles(
+      bold: true,
+      height: PosTextSize.size2,
+      align: PosAlign.center,
     );
     const numberRight = PosStyles(
       bold: true,
       height: PosTextSize.size2,
-      width: PosTextSize.size2,
       align: PosAlign.right,
     );
     // Sanitizamos campos alimentados por el usuario (nombre del vendedor,
@@ -225,7 +228,7 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
       ..._dashedLine(g),
       ...g.row([
         PosColumn(text: 'Apuesta', width: 5, styles: infoStyle),
-        PosColumn(text: 'Monto', width: 3, styles: infoRight),
+        PosColumn(text: 'Monto', width: 3, styles: infoCenter),
         PosColumn(text: 'Premio', width: 4, styles: infoRight),
       ]),
       ...g.emptyLines(1),
@@ -244,7 +247,7 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
           PosColumn(
             text: money.format(p.lines[i].amount),
             width: 3,
-            styles: numberRight,
+            styles: numberCenter,
           ),
           PosColumn(
             text: money.format(p.lines[i].prize),

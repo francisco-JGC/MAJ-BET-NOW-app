@@ -238,7 +238,7 @@ class _LineRow extends StatelessWidget {
             flex: 3,
             child: Text(
               kAmountFormat.format(line.amount),
-              textAlign: TextAlign.right,
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
