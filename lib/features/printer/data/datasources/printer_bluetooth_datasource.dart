@@ -104,24 +104,18 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     }
   }
 
-  // Bluetooth tiene un MTU limitado (~20-512 bytes según el dispositivo).
-  // Enviar todos los bytes de golpe hace que la impresora descarte los que
-  // no caben en su buffer interno, truncando el ticket. Se envían en chunks
-  // con una pausa para que el buffer de la impresora tenga tiempo de vaciarse.
-  static const _kChunkSize = 512;
-  static const _kChunkDelay = Duration(milliseconds: 20);
-
   Future<void> _write(List<int> bytes) async {
-    for (var i = 0; i < bytes.length; i += _kChunkSize) {
-      final end = (i + _kChunkSize < bytes.length) ? i + _kChunkSize : bytes.length;
-      final ok = await PrintBluetoothThermal.writeBytes(bytes.sublist(i, end));
-      if (!ok) {
-        throw Exception('No fue posible enviar los datos a la impresora');
-      }
-      if (end < bytes.length) {
-        await Future<void>.delayed(_kChunkDelay);
-      }
+    final ok = await PrintBluetoothThermal.writeBytes(bytes);
+    if (!ok) {
+      throw Exception('No fue posible enviar los datos a la impresora');
     }
+    // `writeBytes` retorna cuando los bytes llegan al buffer BT, no cuando
+    // la impresora termina de procesarlos. Si desconectamos de inmediato, la
+    // impresora descarta lo que todavía no imprimió. Esperamos proporcional
+    // al tamaño: ~40 bytes/ms es una estimación conservadora para 58mm a
+    // 80 mm/s; mínimo 1 s, máximo 6 s.
+    final waitMs = (bytes.length / 40).ceil().clamp(1000, 6000);
+    await Future<void>.delayed(Duration(milliseconds: waitMs));
   }
 
   List<int> _safeQrCode(Generator g, String text, {int moduleSize = 6}) {
