@@ -170,19 +170,16 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     const numberStyle = PosStyles(
       bold: true,
       height: PosTextSize.size2,
-      width: PosTextSize.size2,
       align: PosAlign.left,
     );
     const numberCenter = PosStyles(
       bold: true,
       height: PosTextSize.size2,
-      width: PosTextSize.size2,
       align: PosAlign.center,
     );
     const numberRight = PosStyles(
       bold: true,
       height: PosTextSize.size2,
-      width: PosTextSize.size2,
       align: PosAlign.right,
     );
     // Sanitizamos campos alimentados por el usuario (nombre del vendedor,
@@ -265,6 +262,7 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
         styles: const PosStyles(
           align: PosAlign.center,
           bold: true,
+          height: PosTextSize.size2,
         ),
       ),
       ...g.emptyLines(1),
