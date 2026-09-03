@@ -104,10 +104,23 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     }
   }
 
+  // Bluetooth tiene un MTU limitado (~20-512 bytes según el dispositivo).
+  // Enviar todos los bytes de golpe hace que la impresora descarte los que
+  // no caben en su buffer interno, truncando el ticket. Se envían en chunks
+  // con una pausa para que el buffer de la impresora tenga tiempo de vaciarse.
+  static const _kChunkSize = 512;
+  static const _kChunkDelay = Duration(milliseconds: 20);
+
   Future<void> _write(List<int> bytes) async {
-    final ok = await PrintBluetoothThermal.writeBytes(bytes);
-    if (!ok) {
-      throw Exception('No fue posible enviar los datos a la impresora');
+    for (var i = 0; i < bytes.length; i += _kChunkSize) {
+      final end = (i + _kChunkSize < bytes.length) ? i + _kChunkSize : bytes.length;
+      final ok = await PrintBluetoothThermal.writeBytes(bytes.sublist(i, end));
+      if (!ok) {
+        throw Exception('No fue posible enviar los datos a la impresora');
+      }
+      if (end < bytes.length) {
+        await Future<void>.delayed(_kChunkDelay);
+      }
     }
   }
 
