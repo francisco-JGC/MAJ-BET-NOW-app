@@ -170,16 +170,19 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     const numberStyle = PosStyles(
       bold: true,
       height: PosTextSize.size2,
+      width: PosTextSize.size2,
       align: PosAlign.left,
     );
     const numberCenter = PosStyles(
       bold: true,
       height: PosTextSize.size2,
+      width: PosTextSize.size2,
       align: PosAlign.center,
     );
     const numberRight = PosStyles(
       bold: true,
       height: PosTextSize.size2,
+      width: PosTextSize.size2,
       align: PosAlign.right,
     );
     // Sanitizamos campos alimentados por el usuario (nombre del vendedor,
@@ -231,7 +234,7 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
         PosColumn(text: 'Monto', width: 3, styles: infoCenter),
         PosColumn(text: 'Premio', width: 4, styles: infoRight),
       ]),
-      ...g.emptyLines(1),
+      ..._dashedLine(g),
       for (var i = 0; i < p.lines.length; i++) ...[
         if (p.lines[i].subGameName != null &&
             (i == 0 ||
@@ -256,7 +259,7 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
           ),
         ]),
       ],
-      ...g.emptyLines(1),
+      ..._dashedLine(g),
       ...g.text(
         'TOTAL: ${kCurrencyFormat.format(p.total)}',
         styles: const PosStyles(
@@ -265,17 +268,16 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
         ),
       ),
       ...g.emptyLines(1),
-      ...g.hr(),
       ...g.text(
-        'Boleto valido para 1 sorteo',
+        'Valido para 1 sorteo',
         styles: const PosStyles(align: PosAlign.center, bold: true),
       ),
       ...g.text(
-        'Por favor revisar su compra',
+        'Por favor revise su boleto',
         styles: const PosStyles(align: PosAlign.center),
       ),
       ...g.text(
-        'No se aceptan devoluciones',
+        'Premio valido por 7 dias',
         styles: const PosStyles(align: PosAlign.center),
       ),
       ...g.emptyLines(1),
@@ -296,10 +298,8 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
   /// que el separador visual sea el mismo carácter que el cliente reconoce
   /// como delimitador de la sección de jugadas.
   List<int> _dashedLine(Generator g) {
-    // 32 columnas es el ancho de una impresora de 58mm en la fuente
-    // por defecto del ESC/POS. Alternamos con espacio para que se lea
-    // como guiones separados y no como una barra sólida.
-    const dashed = '- - - - - - - - - - - - - - - -';
+    // 32 columnas = ancho de una impresora de 58mm en fuente por defecto.
+    const dashed = '--------------------------------';
     return g.text(dashed, styles: const PosStyles(align: PosAlign.center));
   }
 }
