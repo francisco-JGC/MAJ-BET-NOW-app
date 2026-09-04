@@ -184,9 +184,13 @@ class _GameDetailPageState extends ConsumerState<GameDetailPage> {
       case GameType.threeDigit:
         final ctrl = ref.read(gana3CartControllerProvider(game.id).notifier);
         for (final l in lines) {
-          final n = int.tryParse(l.label.trim());
+          final raw = l.label.trim();
+          // Labels: exacto → "NNN", fácil → "NNN (F)"
+          final isEasy = raw.endsWith(' (F)');
+          final numStr = isEasy ? raw.substring(0, raw.length - 4) : raw;
+          final n = int.tryParse(numStr);
           if (n != null && n >= 0 && n <= 999) {
-            ctrl.addSingle(number: n, amount: l.amount, isExact: false);
+            ctrl.addSingle(number: n, amount: l.amount, isExact: !isEasy);
           }
         }
       case GameType.fourDigit:
@@ -825,7 +829,7 @@ class _MultiSorteoGameViewState
                 .map((b) => TicketLine(
                       number: b.isExact
                           ? b.numberLabel
-                          : '${b.numberLabel} (F)',
+                          : '${b.numberLabel}F',
                       amount: b.amount,
                       prize: b.prize,
                     ))
@@ -1447,7 +1451,7 @@ Future<void> _printGana3(
       gameName: game.name,
       lines: cart.bets
           .map((b) => TicketLine(
-                number: b.isExact ? b.numberLabel : '${b.numberLabel} (F)',
+                number: b.isExact ? b.numberLabel : '${b.numberLabel}F',
                 amount: b.amount,
                 prize: b.prize,
               ))

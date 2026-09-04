@@ -525,7 +525,11 @@ class _TicketMenu extends ConsumerWidget {
       gameName: game?.name ?? '—',
       lines: detail.lines
           .map((l) => printer.TicketLine(
-                number: l.label,
+                // Backend guarda fácil como "NNN (F)". En el ticket impreso
+                // lo compactamos a "NNNF" para que quepa en la columna size2.
+                number: l.label.endsWith(' (F)')
+                    ? '${l.label.substring(0, l.label.length - 4)}F'
+                    : l.label,
                 amount: l.amount,
                 prize: l.prize,
                 subGameName: l.subGameName,
