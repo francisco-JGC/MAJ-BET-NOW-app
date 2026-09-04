@@ -31,7 +31,8 @@ class _GamesGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (games.isEmpty) {
+    final active = games.where((g) => g.isActive).toList();
+    if (active.isEmpty) {
       return const Center(child: Text('No hay juegos autorizados'));
     }
     return GridView.builder(
@@ -45,32 +46,14 @@ class _GamesGrid extends StatelessWidget {
         mainAxisSpacing: 12,
         childAspectRatio: 1.05,
       ),
-      itemCount: games.length,
+      itemCount: active.length,
       itemBuilder: (context, i) {
-        final game = games[i];
+        final game = active[i];
         return GameCard(
           game: game,
-          onTap: () {
-            if (!game.isActive) {
-              _showInactiveSnack(context, game.name);
-              return;
-            }
-            context.push('/juegos/${game.id}', extra: game);
-          },
+          onTap: () => context.push('/juegos/${game.id}', extra: game),
         );
       },
-    );
-  }
-
-  static void _showInactiveSnack(BuildContext context, String gameName) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text('$gameName no está disponible por los momentos.'),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
     );
   }
 }

@@ -16,59 +16,7 @@ class GameCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              _Content(game: game),
-              if (!game.isActive) const _InactiveOverlay(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _InactiveOverlay extends StatelessWidget {
-  const _InactiveOverlay();
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: Container(
-        color: Colors.black.withValues(alpha: 0.55),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    width: 1.5,
-                  ),
-                ),
-                child: const Icon(
-                  Icons.lock_outline,
-                  color: Colors.white,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'No disponible',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.3,
-                ),
-              ),
-            ],
-          ),
+          child: _Content(game: game),
         ),
       ),
     );
