@@ -184,21 +184,9 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     // finales, que también van centradas.
     const infoCenter = PosStyles(bold: true, align: PosAlign.center);
     const infoRight = PosStyles(bold: true, align: PosAlign.right);
-    const numberStyle = PosStyles(
-      bold: true,
-      height: PosTextSize.size2,
-      align: PosAlign.left,
-    );
-    const numberCenter = PosStyles(
-      bold: true,
-      height: PosTextSize.size2,
-      align: PosAlign.center,
-    );
-    const numberRight = PosStyles(
-      bold: true,
-      height: PosTextSize.size2,
-      align: PosAlign.right,
-    );
+    const numberStyle = PosStyles(bold: true, align: PosAlign.left);
+    const numberCenter = PosStyles(bold: true, align: PosAlign.center);
+    const numberRight = PosStyles(bold: true, align: PosAlign.right);
     // Sanitizamos campos alimentados por el usuario (nombre del vendedor,
     // sucursal, cliente, footer) porque el codec ESC/POS rechaza codepoints
     // fuera del codepage (emojis, símbolos raros) con `ArgumentError:
@@ -228,19 +216,19 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
       if (copyBanner != null) ...[
         ...g.text(copyBanner, styles: infoCenter),
       ],
-      ...g.text('Juego: $gameName', styles: infoCenter),
       ...g.text('Folio: ${p.folio}', styles: infoCenter),
       ...g.text('Fecha: ${formatDateTime(p.date)}', styles: infoCenter),
+      ...g.text('Juego: $gameName', styles: infoCenter),
       if (p.drawAt != null)
         ...g.text(
           'Sorteo: ${DateFormat('h:mm a', 'en_US').format(p.drawAt!.toLocal()).toLowerCase()}',
           styles: infoCenter,
         ),
       ...g.text('Cliente: $client', styles: infoCenter),
-      if (seller.isNotEmpty)
-        ...g.text('Vendedor: $seller', styles: infoCenter),
       if (salePoint.isNotEmpty)
         ...g.text('Puesto: $salePoint', styles: infoCenter),
+      if (seller.isNotEmpty)
+        ...g.text('Vendedor: $seller', styles: infoCenter),
       ...g.emptyLines(1),
       ..._dashedLine(g),
       ...g.row([
