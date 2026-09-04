@@ -178,15 +178,15 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     }
     final money = kAmountFormat;
 
+    // Info del ticket y header de columnas: negrita, tamaño normal.
     const infoStyle = PosStyles(bold: true, align: PosAlign.left);
-    // Header centrado (folio, sucursal, sorteo, vendedor, cliente): ayuda
-    // a la lectura rápida y respeta la simetría con el QR y las notas
-    // finales, que también van centradas.
     const infoCenter = PosStyles(bold: true, align: PosAlign.center);
     const infoRight = PosStyles(bold: true, align: PosAlign.right);
-    const numberStyle = PosStyles(bold: true, align: PosAlign.left);
-    const numberCenter = PosStyles(bold: true, align: PosAlign.center);
-    const numberRight = PosStyles(bold: true, align: PosAlign.right);
+    // Números: negrita + ancho doble (width:size2). La altura NO cambia,
+    // solo el ancho — los caracteres son más anchos/legibles sin estirarse.
+    const numberStyle = PosStyles(bold: true, width: PosTextSize.size2, align: PosAlign.left);
+    const numberCenter = PosStyles(bold: true, width: PosTextSize.size2, align: PosAlign.center);
+    const numberRight = PosStyles(bold: true, width: PosTextSize.size2, align: PosAlign.right);
     // Sanitizamos campos alimentados por el usuario (nombre del vendedor,
     // sucursal, cliente, footer) porque el codec ESC/POS rechaza codepoints
     // fuera del codepage (emojis, símbolos raros) con `ArgumentError:
@@ -277,11 +277,11 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
       ),
       ...g.text(
         'Por favor revise su boleto',
-        styles: const PosStyles(align: PosAlign.center),
+        styles: const PosStyles(align: PosAlign.center, bold: true),
       ),
       ...g.text(
         'Premio valido por 7 dias',
-        styles: const PosStyles(align: PosAlign.center),
+        styles: const PosStyles(align: PosAlign.center, bold: true),
       ),
       ...g.emptyLines(1),
       ..._safeQrCode(g, p.toQrData(), moduleSize: 4),
