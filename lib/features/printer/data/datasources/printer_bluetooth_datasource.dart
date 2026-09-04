@@ -229,7 +229,6 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
         ...g.text('Puesto: $salePoint', styles: infoCenter),
       if (seller.isNotEmpty)
         ...g.text('Vendedor: $seller', styles: infoCenter),
-      ...g.emptyLines(1),
       ..._dashedLine(g),
       ...g.row([
         PosColumn(text: 'Apuesta', width: 5, styles: infoStyle),
