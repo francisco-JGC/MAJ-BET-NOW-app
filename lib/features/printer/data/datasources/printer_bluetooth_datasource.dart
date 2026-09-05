@@ -187,6 +187,10 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     // solo el ancho — los caracteres son más anchos/legibles sin estirarse.
     const numberStyle = PosStyles(bold: true, width: PosTextSize.size2, align: PosAlign.left);
     const numberRight = PosStyles(bold: true, width: PosTextSize.size2, align: PosAlign.right);
+    // Para juegos de fecha las etiquetas ("01 Ene") son más largas —
+    // usamos tamaño normal (size1) para que quepan sin truncarse.
+    const dateStyle = PosStyles(bold: true, align: PosAlign.left);
+    const dateRight = PosStyles(bold: true, align: PosAlign.right);
     // Sanitizamos campos alimentados por el usuario (nombre del vendedor,
     // sucursal, cliente, footer) porque el codec ESC/POS rechaza codepoints
     // fuera del codepage (emojis, símbolos raros) con `ArgumentError:
@@ -247,16 +251,20 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
           ),
         ],
         ...g.row([
-          PosColumn(text: p.lines[i].number, width: 4, styles: numberStyle),
+          PosColumn(
+            text: p.lines[i].number,
+            width: 4,
+            styles: p.isDate ? dateStyle : numberStyle,
+          ),
           PosColumn(
             text: money.format(p.lines[i].amount),
             width: 3,
-            styles: numberStyle,
+            styles: p.isDate ? dateStyle : numberStyle,
           ),
           PosColumn(
             text: prize.format(p.lines[i].prize),
             width: 5,
-            styles: numberRight,
+            styles: p.isDate ? dateRight : numberRight,
           ),
         ]),
       ],

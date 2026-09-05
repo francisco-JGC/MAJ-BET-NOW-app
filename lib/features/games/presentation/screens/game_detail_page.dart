@@ -791,9 +791,10 @@ class _MultiSorteoGameViewState
             gameId: sub.id,
             gameSlug: sub.slug,
             gameName: sub.name,
+            isDate: true,
             lines: cart.bets
                 .map((b) => TicketLine(
-                      number: b.label,
+                      number: b.printLabel,
                       amount: b.amount,
                       prize: b.prize,
                     ))
@@ -1498,9 +1499,10 @@ Future<void> _printDates(
       gameId: game.id,
       gameSlug: game.slug,
       gameName: game.name,
+      isDate: true,
       lines: cart.bets
           .map((b) => TicketLine(
-                number: b.label,
+                number: b.printLabel,
                 amount: b.amount,
                 prize: b.prize,
               ))

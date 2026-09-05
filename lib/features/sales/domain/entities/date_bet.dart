@@ -22,7 +22,15 @@ class DateBet extends Equatable {
 
   String get dayLabel => day.toString().padLeft(2, '0');
   String get monthLabel => kMonthAbbreviations[month - 1];
-  String get label => '$dayLabel-$monthLabel';
+
+  /// API label sent to the backend (lowercase, space separator): "01 ene"
+  String get label => '$dayLabel $monthLabel';
+
+  /// Display label for tickets (capitalized month): "01 Ene"
+  String get printLabel {
+    final m = monthLabel;
+    return '$dayLabel ${m[0].toUpperCase()}${m.substring(1)}';
+  }
 
   @override
   List<Object?> get props => [day, month, amount];

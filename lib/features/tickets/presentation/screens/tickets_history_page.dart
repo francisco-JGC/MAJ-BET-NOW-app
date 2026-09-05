@@ -10,6 +10,7 @@ import '../../../../core/utils/time_format.dart';
 import '../../../../core/widgets/date_range_field.dart';
 import '../../../../core/widgets/game_draw_filter_bar.dart';
 import '../../../games/domain/entities/game.dart';
+import '../../../games/domain/entities/game_type.dart';
 import '../../../games/presentation/screens/game_detail_page.dart';
 import '../../../games/presentation/state/games_controller.dart';
 import '../../../printer/domain/entities/ticket_payload.dart' as printer;
@@ -518,18 +519,22 @@ class _TicketMenu extends ConsumerWidget {
     printer.TicketCopyKind copyKind = printer.TicketCopyKind.original,
   }) {
     final summary = detail.summary;
+    final isDate = game?.type == GameType.date;
     return printer.TicketPayload(
       id: summary.id,
       gameId: summary.gameId,
       gameSlug: game?.slug ?? '',
       gameName: game?.name ?? '—',
+      isDate: isDate,
       lines: detail.lines
           .map((l) => printer.TicketLine(
-                // Backend guarda fácil como "NNN (F)". En el ticket impreso
-                // lo compactamos a "NNNF" para que quepa en la columna size2.
-                number: l.label.endsWith(' (F)')
-                    ? '${l.label.substring(0, l.label.length - 4)}F'
-                    : l.label,
+                number: isDate
+                    ? _normalizeDateLabel(l.label)
+                    // Backend guarda fácil como "NNN (F)". En el ticket impreso
+                    // lo compactamos a "NNNF" para que quepa en la columna size2.
+                    : l.label.endsWith(' (F)')
+                        ? '${l.label.substring(0, l.label.length - 4)}F'
+                        : l.label,
                 amount: l.amount,
                 prize: l.prize,
                 subGameName: l.subGameName,
@@ -542,6 +547,17 @@ class _TicketMenu extends ConsumerWidget {
       client: summary.client,
       copyKind: copyKind,
     );
+  }
+
+  /// Normaliza etiquetas de fecha guardadas en el backend a "DD Mes" legible.
+  /// Maneja tanto el formato viejo "01-ene" como el nuevo "01 ene".
+  static String _normalizeDateLabel(String label) {
+    final parts = label.replaceAll('-', ' ').split(' ');
+    if (parts.length == 2 && parts[1].isNotEmpty) {
+      final m = parts[1];
+      return '${parts[0]} ${m[0].toUpperCase()}${m.substring(1)}';
+    }
+    return label;
   }
 }
 
