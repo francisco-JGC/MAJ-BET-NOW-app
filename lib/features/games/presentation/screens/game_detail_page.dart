@@ -195,7 +195,7 @@ class _GameDetailPageState extends ConsumerState<GameDetailPage> {
           }
         }
       case GameType.fourDigit:
-        final ctrl = ref.read(comboCartControllerProvider(game.id).notifier);
+        final ctrl = ref.read(comboCartControllerProvider((game.id, game.exactMultiplier ?? kComboMultiplier)).notifier);
         for (final l in lines) {
           final n = int.tryParse(l.label.trim());
           if (n != null && n >= 0 && n <= 9999) {
@@ -612,9 +612,9 @@ class _MultiSorteoGameViewState
           ),
         );
       case GameType.fourDigit:
-        final cart = ref.watch(comboCartControllerProvider(sub.id));
+        final cart = ref.watch(comboCartControllerProvider((sub.id, sub.exactMultiplier ?? kComboMultiplier)));
         final controller =
-            ref.read(comboCartControllerProvider(sub.id).notifier);
+            ref.read(comboCartControllerProvider((sub.id, sub.exactMultiplier ?? kComboMultiplier)).notifier);
         return Expanded(
           child: _scrollableCart(
             form: QuickComboBetForm(
@@ -677,7 +677,7 @@ class _MultiSorteoGameViewState
         final c = ref.watch(gana3CartControllerProvider(sub.id));
         return (total: c.total, count: c.count, isEmpty: c.isEmpty);
       case GameType.fourDigit:
-        final c = ref.watch(comboCartControllerProvider(sub.id));
+        final c = ref.watch(comboCartControllerProvider((sub.id, sub.exactMultiplier ?? kComboMultiplier)));
         return (total: c.total, count: c.count, isEmpty: c.isEmpty);
       case GameType.multiSorteo:
         return (total: 0, count: 0, isEmpty: true);
@@ -693,7 +693,7 @@ class _MultiSorteoGameViewState
       case GameType.threeDigit:
         ref.read(gana3CartControllerProvider(sub.id).notifier).clear();
       case GameType.fourDigit:
-        ref.read(comboCartControllerProvider(sub.id).notifier).clear();
+        ref.read(comboCartControllerProvider((sub.id, sub.exactMultiplier ?? kComboMultiplier)).notifier).clear();
       case GameType.multiSorteo:
         return;
     }
@@ -845,7 +845,7 @@ class _MultiSorteoGameViewState
           ),
         );
       case GameType.fourDigit:
-        final cart = ref.read(comboCartControllerProvider(sub.id));
+        final cart = ref.read(comboCartControllerProvider((sub.id, sub.exactMultiplier ?? kComboMultiplier)));
         return _persistAndPrintForSub(
           sub: sub,
           client: cart.client,
@@ -1095,9 +1095,9 @@ class _ComboGameView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cart = ref.watch(comboCartControllerProvider(game.id));
+    final cart = ref.watch(comboCartControllerProvider((game.id, game.exactMultiplier ?? kComboMultiplier)));
     final controller =
-        ref.read(comboCartControllerProvider(game.id).notifier);
+        ref.read(comboCartControllerProvider((game.id, game.exactMultiplier ?? kComboMultiplier)).notifier);
     final printerState = ref.watch(printerControllerProvider);
     final submitting = ref.watch(ticketSubmittingProvider);
     final formResetKey = ref.watch(formResetProvider(game.id));
@@ -1418,7 +1418,7 @@ Future<void> _printCombo(
       client: cart.client,
     ),
     onSuccess: () {
-      ref.read(comboCartControllerProvider(game.id).notifier).clear();
+      ref.read(comboCartControllerProvider((game.id, game.exactMultiplier ?? kComboMultiplier)).notifier).clear();
       ref.read(formResetProvider(game.id).notifier).bump();
     },
   );

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../../../core/utils/prize.dart';
 import '../../../games/domain/entities/game.dart';
 import '../../../games/domain/entities/game_type.dart';
 import '../../../games/presentation/state/games_controller.dart';
@@ -208,7 +209,7 @@ class _ScanTicketPageState extends ConsumerState<ScanTicketPage>
             .clear();
       case GameType.fourDigit:
         ref
-            .read(comboCartControllerProvider(widget.game.id).notifier)
+            .read(comboCartControllerProvider((widget.game.id, widget.game.exactMultiplier ?? kComboMultiplier)).notifier)
             .clear();
       case GameType.date:
         ref
@@ -255,7 +256,7 @@ class _ScanTicketPageState extends ConsumerState<ScanTicketPage>
 
   int _loadCombo(TicketDetail detail, String? client) {
     final notifier =
-        ref.read(comboCartControllerProvider(widget.game.id).notifier);
+        ref.read(comboCartControllerProvider((widget.game.id, widget.game.exactMultiplier ?? kComboMultiplier)).notifier);
     int count = 0;
     for (final line in detail.lines) {
       final n = int.tryParse(line.label);
