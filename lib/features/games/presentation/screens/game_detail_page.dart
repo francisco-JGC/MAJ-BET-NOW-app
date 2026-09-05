@@ -11,6 +11,7 @@ import '../../../game_prizes/domain/entities/effective_game_prize.dart';
 import '../../../game_prizes/presentation/state/effective_game_prizes_provider.dart';
 import '../../../printer/domain/entities/ticket_payload.dart';
 import '../../../printer/presentation/state/printer_controller.dart';
+import '../../../sale_limits/domain/repositories/sale_limits_repository.dart';
 import '../../../sale_limits/presentation/state/sale_limit_availability_provider.dart';
 import '../../../sale_limits/presentation/widgets/sale_limits_banner.dart';
 import '../../../sale_points/presentation/state/active_sale_point_controller.dart';
@@ -1630,6 +1631,23 @@ Future<void> _persistAndPrintInner(
       subGameName: l.subGameName,
     );
   }).toList();
+
+  // Validate per-number minimum amounts before submitting.
+  // Fails silently on network error — backend still enforces on server side.
+  final minAmounts = await getIt<SaleLimitsRepository>()
+      .getMinAmountsByNumber(gameId: game.id, salePointId: salePoint.id)
+      .then((r) => r.fold((_) => <String, int>{}, (m) => m));
+  for (final line in requestLines) {
+    final min = minAmounts[line.label];
+    if (min != null && line.amount < min) {
+      messenger.showSnackBar(SnackBar(
+        content: Text(
+          'Monto mínimo para "${line.label}" es C\$$min. Ingresaste C\$${line.amount}.',
+        ),
+      ));
+      return;
+    }
+  }
 
   // UUID de idempotencia — combina:
   //   (a) Auto-retry del AuthInterceptor tras 401: el request queda con
