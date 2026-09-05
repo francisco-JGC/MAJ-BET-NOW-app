@@ -82,22 +82,13 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         orderIndex: 4,
       ),
       GameModel(
-        id: 'terminacion2',
-        slug: 'terminacion2',
-        name: 'Terminación 2',
-        type: GameType.regular,
-        exactMultiplier: 80,
-        imagePath: '$_basePath/terminacion2.webp',
-        orderIndex: 5,
-      ),
-      GameModel(
         id: 'tica',
         slug: 'tica',
         name: 'Tica',
         type: GameType.regular,
         exactMultiplier: 80,
         imagePath: '$_basePath/tica.webp',
-        orderIndex: 6,
+        orderIndex: 5,
       ),
       GameModel(
         id: 'tresmonazo',
@@ -107,7 +98,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         exactMultiplier: 600,
         easyMultiplier: 100,
         imagePath: '$_basePath/tresmonazo.webp',
-        orderIndex: 7,
+        orderIndex: 6,
       ),
       GameModel(
         id: 'hondurena',
@@ -116,7 +107,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         type: GameType.regular,
         exactMultiplier: 80,
         imagePath: '$_basePath/hondurena.webp',
-        orderIndex: 8,
+        orderIndex: 7,
       ),
       GameModel(
         id: 'gana3',
@@ -126,6 +117,15 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         exactMultiplier: 600,
         easyMultiplier: 100,
         imagePath: '$_basePath/gana3.webp',
+        orderIndex: 8,
+      ),
+      GameModel(
+        id: 'terminacion2',
+        slug: 'terminacion2',
+        name: 'Terminación 2',
+        type: GameType.regular,
+        exactMultiplier: 80,
+        imagePath: '$_basePath/terminacion2.webp',
         orderIndex: 9,
       ),
       GameModel(
@@ -147,21 +147,12 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
         orderIndex: 11,
       ),
       GameModel(
-        id: 'rifas',
-        slug: 'rifas',
-        name: 'Rifas',
-        type: GameType.regular,
-        exactMultiplier: 80,
-        imagePath: '$_basePath/rifas.webp',
-        orderIndex: 12,
-      ),
-      GameModel(
         id: 'multisorteo',
         slug: 'multisorteo',
         name: 'Multi Sorteo',
         type: GameType.multiSorteo,
         imagePath: '$_basePath/multisorteo.webp',
-        orderIndex: 13,
+        orderIndex: 12,
       ),
     ];
   }
