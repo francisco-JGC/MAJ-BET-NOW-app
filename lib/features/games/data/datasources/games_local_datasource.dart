@@ -121,7 +121,7 @@ class GamesLocalDatasourceImpl implements GamesLocalDatasource {
       GameModel(
         id: 'gana3',
         slug: 'gana3',
-        name: 'Gana 3',
+        name: 'J3 Hondura',
         type: GameType.threeDigit,
         exactMultiplier: 600,
         easyMultiplier: 100,
