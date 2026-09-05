@@ -25,6 +25,7 @@ class GamesRepositoryImpl implements GamesRepository {
     'gana3':        'assets/images/games/gana3.webp',
     'primera':      'assets/images/games/primera.webp',
     'salvadorena':  'assets/images/games/salvadorena.webp',
+    'juga4':        'assets/images/games/juga4.webp',
     'multisorteo':  'assets/images/games/multisorteo.webp',
   };
 
