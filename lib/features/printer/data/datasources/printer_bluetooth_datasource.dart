@@ -177,6 +177,7 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
       return '${dateOnly.format(local)} $t';
     }
     final money = kAmountFormat;
+    final prize = NumberFormat('#0', 'en_US');
 
     // Info del ticket y header de columnas: negrita, tamaño normal.
     const infoStyle = PosStyles(bold: true, align: PosAlign.left);
@@ -185,7 +186,6 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     // Números: negrita + ancho doble (width:size2). La altura NO cambia,
     // solo el ancho — los caracteres son más anchos/legibles sin estirarse.
     const numberStyle = PosStyles(bold: true, width: PosTextSize.size2, align: PosAlign.left);
-    const numberCenter = PosStyles(bold: true, width: PosTextSize.size2, align: PosAlign.center);
     const numberRight = PosStyles(bold: true, width: PosTextSize.size2, align: PosAlign.right);
     // Sanitizamos campos alimentados por el usuario (nombre del vendedor,
     // sucursal, cliente, footer) porque el codec ESC/POS rechaza codepoints
@@ -231,9 +231,9 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
         ...g.text('Vendedor: $seller', styles: infoCenter),
       ..._dashedLine(g),
       ...g.row([
-        PosColumn(text: 'Apuesta', width: 5, styles: infoStyle),
-        PosColumn(text: 'Monto', width: 3, styles: infoCenter),
-        PosColumn(text: 'Premio', width: 4, styles: infoRight),
+        PosColumn(text: 'Apuesta', width: 4, styles: infoStyle),
+        PosColumn(text: 'Monto', width: 3, styles: infoStyle),
+        PosColumn(text: 'Premio', width: 5, styles: infoRight),
       ]),
       ..._dashedLine(g),
       for (var i = 0; i < p.lines.length; i++) ...[
@@ -247,15 +247,15 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
           ),
         ],
         ...g.row([
-          PosColumn(text: p.lines[i].number, width: 5, styles: numberStyle),
+          PosColumn(text: p.lines[i].number, width: 4, styles: numberStyle),
           PosColumn(
             text: money.format(p.lines[i].amount),
             width: 3,
-            styles: numberCenter,
+            styles: numberStyle,
           ),
           PosColumn(
-            text: money.format(p.lines[i].prize),
-            width: 4,
+            text: prize.format(p.lines[i].prize),
+            width: 5,
             styles: numberRight,
           ),
         ]),
