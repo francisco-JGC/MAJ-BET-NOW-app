@@ -28,21 +28,6 @@ class _Content extends StatelessWidget {
 
   final Game game;
 
-  @override
-  Widget build(BuildContext context) {
-    return Image.asset(
-      'assets/images/games/${game.slug}.webp',
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stack) => _Fallback(game: game),
-    );
-  }
-}
-
-class _Fallback extends StatelessWidget {
-  const _Fallback({required this.game});
-
-  final Game game;
-
   static const _palette = <String, List<Color>>{
     'diaria':       [Color(0xFF3A1F2B), Color(0xFF1A0D14)],
     'juega3':       [Color(0xFF3D2A0F), Color(0xFF17100A)],
@@ -70,19 +55,23 @@ class _Fallback extends StatelessWidget {
           end: Alignment.bottomRight,
         ),
       ),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Text(
-            game.name.toUpperCase(),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
+      child: Image.asset(
+        'assets/images/games/${game.slug}.webp',
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stack) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Text(
+              game.name.toUpperCase(),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.2,
+              ),
             ),
           ),
         ),
