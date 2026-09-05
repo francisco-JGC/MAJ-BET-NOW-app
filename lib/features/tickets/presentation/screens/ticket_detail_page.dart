@@ -137,8 +137,10 @@ class _DetailView extends StatelessWidget {
           Text(
             game?.name ?? '—',
             textAlign: TextAlign.center,
-            style: theme.textTheme.headlineSmall
-                ?.copyWith(fontWeight: FontWeight.w700),
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppTheme.primary,
+            ),
           ),
           const SizedBox(height: 6),
           // Folio con icono copiar
@@ -149,7 +151,7 @@ class _DetailView extends StatelessWidget {
                 '#${ticket.folio}',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.titleMedium
-                    ?.copyWith(color: Colors.grey.shade700),
+                    ?.copyWith(color: AppTheme.primary),
               ),
               const SizedBox(width: 6),
               GestureDetector(
@@ -162,10 +164,10 @@ class _DetailView extends StatelessWidget {
                     ),
                   );
                 },
-                child: Icon(
+                child: const Icon(
                   Icons.copy_outlined,
                   size: 16,
-                  color: Colors.grey.shade500,
+                  color: AppTheme.primary,
                 ),
               ),
             ],
@@ -254,6 +256,16 @@ class _DetailView extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 8),
+          const Text(
+            'Por favor revise su boleto, valido por 7 dias',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.primary,
+            ),
+          ),
         ],
       ),
     );
@@ -300,7 +312,7 @@ class _DetailView extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.primary,
+                  color: Colors.black,
                 ),
               ),
             ),
@@ -312,7 +324,7 @@ class _DetailView extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppTheme.primary,
+                  color: Colors.black,
                 ),
               ),
             ),
@@ -345,14 +357,18 @@ class _InfoRow extends StatelessWidget {
             children: [
               TextSpan(
                 text: '$label: ',
-                style: TextStyle(
-                  color: Colors.grey.shade600,
+                style: const TextStyle(
+                  color: AppTheme.primary,
                   fontSize: 13,
                 ),
               ),
               TextSpan(
                 text: value,
-                style: const TextStyle(fontSize: 14, color: Colors.black),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.primary,
+                ),
               ),
             ],
           ),
