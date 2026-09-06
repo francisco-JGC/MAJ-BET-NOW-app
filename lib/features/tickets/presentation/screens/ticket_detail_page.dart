@@ -205,38 +205,30 @@ class _DetailView extends StatelessWidget {
             ),
             child: const Row(
               children: [
-                Expanded(
-                  child: Text(
-                    'Apuesta',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                    ),
+                Text(
+                  'Apuesta',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
                   ),
                 ),
-                SizedBox(
-                  width: 72,
-                  child: Text(
-                    'Monto',
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                    ),
+                Spacer(),
+                Text(
+                  'Monto',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
                   ),
                 ),
-                SizedBox(
-                  width: 84,
-                  child: Text(
-                    'Premio',
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                    ),
+                Spacer(),
+                Text(
+                  'Premio',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
                   ),
                 ),
               ],
@@ -293,37 +285,33 @@ class _DetailView extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: Row(
           children: [
-            Expanded(
+            Flexible(
               child: Text(
                 line.label,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
                 style: const TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 16,
                 ),
               ),
             ),
-            SizedBox(
-              width: 72,
-              child: Text(
-                kCurrencyFormat.format(line.amount),
-                textAlign: TextAlign.right,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
+            const Spacer(),
+            Text(
+              kCurrencyFormat.format(line.amount),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
               ),
             ),
-            SizedBox(
-              width: 84,
-              child: Text(
-                kCurrencyFormat.format(line.prize),
-                textAlign: TextAlign.right,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
+            const Spacer(),
+            Text(
+              kCurrencyFormat.format(line.prize),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
               ),
             ),
           ],
