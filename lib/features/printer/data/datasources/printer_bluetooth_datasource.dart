@@ -186,10 +186,12 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     // Números: negrita + ancho doble (width:size2). La altura NO cambia,
     // solo el ancho — los caracteres son más anchos/legibles sin estirarse.
     const numberStyle = PosStyles(bold: true, width: PosTextSize.size2, align: PosAlign.left);
+    const numberCenter = PosStyles(bold: true, width: PosTextSize.size2, align: PosAlign.center);
     const numberRight = PosStyles(bold: true, width: PosTextSize.size2, align: PosAlign.right);
     // Para juegos de fecha las etiquetas ("01 Ene") son más largas —
     // usamos tamaño normal (size1) para que quepan sin truncarse.
     const dateStyle = PosStyles(bold: true, align: PosAlign.left);
+    const dateCenter = PosStyles(bold: true, align: PosAlign.center);
     const dateRight = PosStyles(bold: true, align: PosAlign.right);
     // Sanitizamos campos alimentados por el usuario (nombre del vendedor,
     // sucursal, cliente, footer) porque el codec ESC/POS rechaza codepoints
@@ -236,7 +238,7 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
       ..._dashedLine(g),
       ...g.row([
         PosColumn(text: 'Apuesta', width: 4, styles: infoStyle),
-        PosColumn(text: 'Monto', width: 3, styles: infoStyle),
+        PosColumn(text: 'Monto', width: 3, styles: infoCenter),
         PosColumn(text: 'Premio', width: 5, styles: infoRight),
       ]),
       ..._dashedLine(g),
@@ -259,7 +261,7 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
           PosColumn(
             text: money.format(p.lines[i].amount),
             width: 3,
-            styles: p.isDate ? dateStyle : numberStyle,
+            styles: p.isDate ? dateCenter : numberCenter,
           ),
           PosColumn(
             text: prize.format(p.lines[i].prize),
