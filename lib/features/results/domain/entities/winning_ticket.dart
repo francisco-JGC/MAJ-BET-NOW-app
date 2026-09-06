@@ -32,6 +32,7 @@ class WinningTicket extends Equatable {
     required this.client,
     required this.drawAt,
     required this.totalPrize,
+    required this.isPaid,
     required this.lines,
   });
 
@@ -41,6 +42,7 @@ class WinningTicket extends Equatable {
   final String? client;
   final DateTime drawAt;
   final int totalPrize;
+  final bool isPaid;
   final List<WinningTicketLine> lines;
 
   @override
@@ -51,6 +53,7 @@ class WinningTicket extends Equatable {
         client,
         drawAt,
         totalPrize,
+        isPaid,
         lines,
       ];
 }

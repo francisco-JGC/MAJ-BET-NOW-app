@@ -8,6 +8,7 @@ class WinningTicketModel extends WinningTicket {
     required super.client,
     required super.drawAt,
     required super.totalPrize,
+    required super.isPaid,
     required super.lines,
   });
 
@@ -24,6 +25,7 @@ class WinningTicketModel extends WinningTicket {
       client: rawTicket['client'] as String?,
       drawAt: DateTime.parse(rawTicket['drawAt'] as String),
       totalPrize: (json['totalPrize'] as num).toInt(),
+      isPaid: rawTicket['isPaid'] as bool? ?? false,
       lines: rawLines,
     );
   }

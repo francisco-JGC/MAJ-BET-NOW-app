@@ -102,6 +102,9 @@ class WinnersPage extends ConsumerWidget {
                         itemBuilder: (context, i) => _WinnerTile(
                           ticket: items[i],
                           game: gamesById[items[i].gameId],
+                          onPaid: () => ref
+                              .read(winnersControllerProvider.notifier)
+                              .refresh(),
                         ),
                       ),
                     ),
@@ -178,10 +181,15 @@ class _TotalCell extends StatelessWidget {
 }
 
 class _WinnerTile extends ConsumerWidget {
-  const _WinnerTile({required this.ticket, required this.game});
+  const _WinnerTile({
+    required this.ticket,
+    required this.game,
+    required this.onPaid,
+  });
 
   final WinningTicket ticket;
   final Game? game;
+  final VoidCallback onPaid;
 
   void _showDetailSheet(BuildContext context) {
     showModalBottomSheet<void>(
@@ -190,7 +198,11 @@ class _WinnerTile extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) => _WinnerDetailSheet(ticket: ticket, game: game),
+      builder: (_) => _WinnerDetailSheet(
+        ticket: ticket,
+        game: game,
+        onPaid: onPaid,
+      ),
     );
   }
 
@@ -217,19 +229,55 @@ class _WinnerTile extends ConsumerWidget {
                       ),
                     ),
                   ),
+                  if (ticket.isPaid) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade50,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.green.shade300),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check_circle,
+                              size: 12, color: Colors.green.shade700),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Pagado',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.green.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                   Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.purple.shade50,
+                      color: ticket.isPaid
+                          ? Colors.grey.shade100
+                          : Colors.purple.shade50,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.purple.shade200),
+                      border: Border.all(
+                        color: ticket.isPaid
+                            ? Colors.grey.shade300
+                            : Colors.purple.shade200,
+                      ),
                     ),
                     child: Text(
                       kCurrencyFormat.format(ticket.totalPrize),
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
-                        color: Colors.purple.shade800,
+                        color: ticket.isPaid
+                            ? Colors.grey.shade500
+                            : Colors.purple.shade800,
                       ),
                     ),
                   ),
@@ -294,10 +342,15 @@ class _WinnerTile extends ConsumerWidget {
 }
 
 class _WinnerDetailSheet extends StatefulWidget {
-  const _WinnerDetailSheet({required this.ticket, required this.game});
+  const _WinnerDetailSheet({
+    required this.ticket,
+    required this.game,
+    required this.onPaid,
+  });
 
   final WinningTicket ticket;
   final Game? game;
+  final VoidCallback onPaid;
 
   @override
   State<_WinnerDetailSheet> createState() => _WinnerDetailSheetState();
@@ -307,6 +360,12 @@ class _WinnerDetailSheetState extends State<_WinnerDetailSheet> {
   bool _paid = false;
   bool _paying = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _paid = widget.ticket.isPaid;
+  }
 
   Future<void> _pay() async {
     setState(() {
@@ -321,10 +380,13 @@ class _WinnerDetailSheetState extends State<_WinnerDetailSheet> {
         _paying = false;
         _error = failure.message;
       }),
-      (_) => setState(() {
-        _paying = false;
-        _paid = true;
-      }),
+      (_) {
+        setState(() {
+          _paying = false;
+          _paid = true;
+        });
+        widget.onPaid();
+      },
     );
   }
 
@@ -430,18 +492,29 @@ class _WinnerDetailSheetState extends State<_WinnerDetailSheet> {
             ],
             // Pay button
             if (_paid)
-              Row(
-                children: [
-                  Icon(Icons.check_circle, color: Colors.green.shade600),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Boleto marcado como pagado',
-                    style: TextStyle(
-                      color: Colors.green.shade700,
-                      fontWeight: FontWeight.w600,
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.check_circle, color: Colors.green.shade600),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Premio pagado',
+                      style: TextStyle(
+                        color: Colors.green.shade700,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               )
             else
               SizedBox(
