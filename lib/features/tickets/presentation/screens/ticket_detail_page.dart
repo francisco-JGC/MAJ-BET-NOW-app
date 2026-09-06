@@ -206,7 +206,6 @@ class _DetailView extends StatelessWidget {
             child: const Row(
               children: [
                 Expanded(
-                  flex: 4,
                   child: Text(
                     'Apuesta',
                     style: TextStyle(
@@ -216,11 +215,11 @@ class _DetailView extends StatelessWidget {
                     ),
                   ),
                 ),
-                Expanded(
-                  flex: 3,
+                SizedBox(
+                  width: 72,
                   child: Text(
                     'Monto',
-                    textAlign: TextAlign.center,
+                    textAlign: TextAlign.right,
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
@@ -228,8 +227,8 @@ class _DetailView extends StatelessWidget {
                     ),
                   ),
                 ),
-                Expanded(
-                  flex: 3,
+                SizedBox(
+                  width: 84,
                   child: Text(
                     'Premio',
                     textAlign: TextAlign.right,
@@ -295,7 +294,6 @@ class _DetailView extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-              flex: 4,
               child: Text(
                 line.label,
                 style: const TextStyle(
@@ -304,11 +302,11 @@ class _DetailView extends StatelessWidget {
                 ),
               ),
             ),
-            Expanded(
-              flex: 3,
+            SizedBox(
+              width: 72,
               child: Text(
                 kCurrencyFormat.format(line.amount),
-                textAlign: TextAlign.center,
+                textAlign: TextAlign.right,
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -316,8 +314,8 @@ class _DetailView extends StatelessWidget {
                 ),
               ),
             ),
-            Expanded(
-              flex: 3,
+            SizedBox(
+              width: 84,
               child: Text(
                 kCurrencyFormat.format(line.prize),
                 textAlign: TextAlign.right,
