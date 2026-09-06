@@ -164,23 +164,11 @@ class _LinesTable extends StatelessWidget {
           ),
           child: const Row(
             children: [
-              Expanded(flex: 4, child: Text('Apuesta', style: headerStyle)),
-              Expanded(
-                flex: 3,
-                child: Text(
-                  'Monto',
-                  textAlign: TextAlign.right,
-                  style: headerStyle,
-                ),
-              ),
-              Expanded(
-                flex: 4,
-                child: Text(
-                  'Premio',
-                  textAlign: TextAlign.right,
-                  style: headerStyle,
-                ),
-              ),
+              Text('Apuesta', style: headerStyle),
+              Spacer(),
+              Text('Monto', style: headerStyle),
+              Spacer(),
+              Text('Premio', style: headerStyle),
             ],
           ),
         ),
@@ -219,13 +207,11 @@ class _LineRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         children: [
-          Expanded(
-            flex: 4,
-            // El número comprado se queda en NEGRO — es el dato crítico que
-            // el cliente lee al revisar su boleto y visualmente lo separa
-            // del resto (branding morado). Esta es la excepción explícita.
+          Flexible(
             child: Text(
               line.number,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
               style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
@@ -234,30 +220,24 @@ class _LineRow extends StatelessWidget {
               ),
             ),
           ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              kAmountFormat.format(line.amount),
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: Colors.black,
-                fontFeatures: [FontFeature.tabularFigures()],
-              ),
+          const Spacer(),
+          Text(
+            kAmountFormat.format(line.amount),
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: Colors.black,
+              fontFeatures: [FontFeature.tabularFigures()],
             ),
           ),
-          Expanded(
-            flex: 4,
-            child: Text(
-              kAmountFormat.format(line.prize),
-              textAlign: TextAlign.right,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: Colors.black,
-                fontFeatures: [FontFeature.tabularFigures()],
-              ),
+          const Spacer(),
+          Text(
+            kAmountFormat.format(line.prize),
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: Colors.black,
+              fontFeatures: [FontFeature.tabularFigures()],
             ),
           ),
         ],

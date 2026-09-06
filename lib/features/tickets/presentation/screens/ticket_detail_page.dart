@@ -205,30 +205,36 @@ class _DetailView extends StatelessWidget {
             ),
             child: const Row(
               children: [
-                Text(
-                  'Apuesta',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
+                Expanded(
+                  child: Text(
+                    'Apuesta',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
-                Spacer(),
-                Text(
-                  'Monto',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
+                Expanded(
+                  child: Text(
+                    'Monto',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
-                Spacer(),
-                Text(
-                  'Premio',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
+                Expanded(
+                  child: Text(
+                    'Premio',
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 13,
+                    ),
                   ),
                 ),
               ],
@@ -282,10 +288,10 @@ class _DetailView extends StatelessWidget {
         ));
       }
       rows.add(Padding(
-        padding: const EdgeInsets.symmetric(vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
         child: Row(
           children: [
-            Flexible(
+            Expanded(
               child: Text(
                 line.label,
                 overflow: TextOverflow.ellipsis,
@@ -296,22 +302,26 @@ class _DetailView extends StatelessWidget {
                 ),
               ),
             ),
-            const Spacer(),
-            Text(
-              kCurrencyFormat.format(line.amount),
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
+            Expanded(
+              child: Text(
+                kCurrencyFormat.format(line.amount),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
               ),
             ),
-            const Spacer(),
-            Text(
-              kCurrencyFormat.format(line.prize),
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
+            Expanded(
+              child: Text(
+                kCurrencyFormat.format(line.prize),
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
               ),
             ),
           ],
