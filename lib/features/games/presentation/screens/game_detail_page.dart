@@ -1663,10 +1663,15 @@ Future<void> _persistAndPrintInner(
   // El cache se limpia solo cuando la venta se completa exitosamente
   // (después de `onSuccess()`), así la próxima venta con los mismos
   // números es una venta nueva de un potencial cliente distinto.
+  // Para juegos regulares drawAt es null y el backend resuelve el sorteo.
+  // Sin este fallback todos los reintentos del día comparten el mismo
+  // fingerprint aunque ocurran en ventanas de sorteo distintas, haciendo
+  // que el backend devuelva el ticket del primer intento (posiblemente del
+  // sorteo anterior) en lugar de crear uno nuevo para el sorteo actual.
   final fingerprint = _cartFingerprint(
     gameId: game.id,
     salePointId: salePoint.id,
-    drawAt: drawAt,
+    drawAt: drawAt ?? lock.nextDrawAt,
     lines: lines,
   );
   final clientRequestId =
