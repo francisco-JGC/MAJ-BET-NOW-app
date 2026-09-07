@@ -163,13 +163,13 @@ class _LinesTable extends StatelessWidget {
             color: _kTicketBrandColor,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: const Row(
+          child: Row(
             children: [
-              Text('Apuesta', style: headerStyle),
-              Spacer(),
-              Text('Monto', style: headerStyle),
-              Spacer(),
-              Text('Premio', style: headerStyle),
+              const Text('Apuesta', style: headerStyle),
+              const Spacer(),
+              const Text('Monto', style: headerStyle),
+              const Spacer(),
+              Text(isFourDigit ? 'Tipo' : 'Premio', style: headerStyle),
             ],
           ),
         ),
@@ -191,7 +191,7 @@ class _LinesTable extends StatelessWidget {
             ),
           ] else if (i > 0)
             const Divider(height: 1, thickness: 0.5, color: Color(0x33000000)),
-          _LineRow(line: lines[i]),
+          _LineRow(line: lines[i], isFourDigit: isFourDigit),
         ],
       ],
     );
@@ -199,8 +199,9 @@ class _LinesTable extends StatelessWidget {
 }
 
 class _LineRow extends StatelessWidget {
-  const _LineRow({required this.line});
+  const _LineRow({required this.line, this.isFourDigit = false});
   final TicketLine line;
+  final bool isFourDigit;
 
   @override
   Widget build(BuildContext context) {
@@ -233,7 +234,7 @@ class _LineRow extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            kAmountFormat.format(line.prize),
+            isFourDigit ? 'Exacto' : kAmountFormat.format(line.prize),
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
