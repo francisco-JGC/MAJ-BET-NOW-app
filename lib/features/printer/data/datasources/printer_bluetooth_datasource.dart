@@ -236,10 +236,12 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
       if (seller.isNotEmpty)
         ...g.text('Vendedor: $seller', styles: infoCenter),
       ..._dashedLine(g),
+      // Columnas iguales (4:4:4) — "Monto" queda en el tercio central del
+      // papel, lo que lo posiciona exactamente en el centro visual.
       ...g.row([
         PosColumn(text: 'Apuesta', width: 4, styles: infoStyle),
-        PosColumn(text: 'Monto', width: 3, styles: infoCenter),
-        PosColumn(text: 'Premio', width: 5, styles: infoRight),
+        PosColumn(text: 'Monto', width: 4, styles: infoCenter),
+        PosColumn(text: 'Premio', width: 4, styles: infoRight),
       ]),
       ..._dashedLine(g),
       for (var i = 0; i < p.lines.length; i++) ...[
@@ -252,23 +254,37 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
             styles: const PosStyles(bold: true),
           ),
         ],
-        ...g.row([
-          PosColumn(
-            text: p.lines[i].number,
-            width: 4,
-            styles: p.isDate ? dateStyle : numberStyle,
-          ),
-          PosColumn(
-            text: money.format(p.lines[i].amount),
-            width: 3,
-            styles: p.isDate ? dateCenter : numberCenter,
-          ),
-          PosColumn(
-            text: prize.format(p.lines[i].prize),
-            width: 5,
-            styles: p.isDate ? dateRight : numberRight,
-          ),
-        ]),
+        ...(() {
+          // Regla de alineación para juegos de número:
+          // - monto > 2 dígitos (>= 100) Y premio > 4 dígitos (>= 10 000)
+          //   → ambos a la IZQUIERDA para que no se monten entre sí.
+          // - En cualquier otro caso → centrado/derecha normal.
+          // Juegos de fecha no aplican (sus etiquetas son texto, no números).
+          final shiftLeft = !p.isDate
+              && p.lines[i].amount > 99
+              && p.lines[i].prize > 9999;
+          return g.row([
+            PosColumn(
+              text: p.lines[i].number,
+              width: 4,
+              styles: p.isDate ? dateStyle : numberStyle,
+            ),
+            PosColumn(
+              text: money.format(p.lines[i].amount),
+              width: 4,
+              styles: p.isDate
+                  ? dateCenter
+                  : (shiftLeft ? numberStyle : numberCenter),
+            ),
+            PosColumn(
+              text: prize.format(p.lines[i].prize),
+              width: 4,
+              styles: p.isDate
+                  ? dateRight
+                  : (shiftLeft ? numberStyle : numberRight),
+            ),
+          ]);
+        })(),
       ],
       ..._dashedLine(g),
       ...g.text(
