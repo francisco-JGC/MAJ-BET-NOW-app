@@ -65,6 +65,19 @@ class ComboCartController extends Notifier<ComboCartState> {
     );
   }
 
+  void addPairs({required int amount}) {
+    if (amount < 1 || amount > 999) return;
+    // 0000, 1111, 2222, ..., 9999  (mismo dígito repetido cuatro veces)
+    const pairs = [0, 1111, 2222, 3333, 4444, 5555, 6666, 7777, 8888, 9999];
+    final incoming = pairs
+        .map((n) => ComboBet(number: n, amount: amount, multiplier: _multiplier))
+        .toList();
+    state = ComboCartState(
+      bets: _merge(state.bets, incoming),
+      client: state.client,
+    );
+  }
+
   List<ComboBet> _merge(List<ComboBet> existing, List<ComboBet> incoming) {
     final result = [...existing];
     for (final b in incoming) {

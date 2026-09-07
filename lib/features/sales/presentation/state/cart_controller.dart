@@ -59,6 +59,14 @@ class CartController extends Notifier<CartState> {
     );
   }
 
+  void addPairs({required int amount}) {
+    if (amount < 1 || amount > 999) return;
+    // 00, 11, 22, ..., 99  (mismo dígito repetido dos veces)
+    const pairs = [0, 11, 22, 33, 44, 55, 66, 77, 88, 99];
+    final incoming = pairs.map((n) => Bet(number: n, amount: amount)).toList();
+    state = CartState(bets: _merge(state.bets, incoming), client: state.client);
+  }
+
   void addBets(List<Bet> bets, {String? client}) {
     if (bets.isEmpty) return;
     state = CartState(

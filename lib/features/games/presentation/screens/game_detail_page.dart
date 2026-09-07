@@ -40,6 +40,7 @@ import '../../../sales/presentation/widgets/quick_bet_form.dart';
 import '../../../sales/presentation/widgets/quick_combo_bet_form.dart';
 import '../../../sales/presentation/widgets/quick_date_bet_form.dart';
 import '../../../sales/presentation/widgets/quick_gana3_bet_form.dart';
+import '../../../sales/presentation/widgets/pairs_form.dart';
 import '../../../sales/presentation/widgets/random_form.dart';
 import '../../../schedules/presentation/state/available_draws_provider.dart';
 import '../../../schedules/presentation/state/game_draw_times_provider.dart';
@@ -256,6 +257,11 @@ class _RegularGameView extends ConsumerWidget {
             onPressed: () => _openRandomForm(context, controller),
           ),
           IconButton(
+            icon: const Icon(Icons.apps),
+            tooltip: 'Todos los pares',
+            onPressed: () => _openPairsForm(context, controller),
+          ),
+          IconButton(
             icon: const Icon(Icons.qr_code_scanner),
             tooltip: 'Escanear boleto',
             onPressed: () => context.push('/juegos/${game.id}/escanear', extra: game),
@@ -335,6 +341,24 @@ class _RegularGameView extends ConsumerWidget {
       builder: (ctx) => RandomForm(
         onSubmit: (r) {
           controller.addRandom(count: r.count, amount: r.amount);
+          Navigator.of(ctx).pop();
+        },
+      ),
+    );
+  }
+
+  Future<void> _openPairsForm(
+    BuildContext context,
+    CartController controller,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (ctx) => PairsForm(
+        digits: 2,
+        onSubmit: (amount) {
+          controller.addPairs(amount: amount);
           Navigator.of(ctx).pop();
         },
       ),
@@ -1141,6 +1165,22 @@ class _ComboGameView extends ConsumerWidget {
             ),
           ),
           IconButton(
+            icon: const Icon(Icons.apps),
+            tooltip: 'Todos los pares',
+            onPressed: () => showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              showDragHandle: true,
+              builder: (ctx) => PairsForm(
+                digits: 4,
+                onSubmit: (amount) {
+                  controller.addPairs(amount: amount);
+                  Navigator.of(ctx).pop();
+                },
+              ),
+            ),
+          ),
+          IconButton(
             icon: const Icon(Icons.qr_code_scanner),
             tooltip: 'Escanear boleto',
             onPressed: () => context.push('/juegos/${game.id}/escanear', extra: game),
@@ -1244,6 +1284,22 @@ class _Gana3GameView extends ConsumerWidget {
                     amount: r.amount,
                     isExact: r.isExact,
                   );
+                  Navigator.of(ctx).pop();
+                },
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.apps),
+            tooltip: 'Todos los pares',
+            onPressed: () => showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              showDragHandle: true,
+              builder: (ctx) => PairsForm(
+                digits: 3,
+                onSubmit: (amount) {
+                  controller.addPairs(amount: amount);
                   Navigator.of(ctx).pop();
                 },
               ),
