@@ -119,5 +119,5 @@ class ComboCartController extends Notifier<ComboCartState> {
   }
 }
 
-final comboCartControllerProvider = NotifierProvider.family<
+final comboCartControllerProvider = NotifierProvider.autoDispose.family<
     ComboCartController, ComboCartState, (String, int)>(ComboCartController.new);

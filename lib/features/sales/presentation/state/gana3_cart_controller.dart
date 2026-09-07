@@ -125,5 +125,5 @@ class Gana3CartController extends Notifier<Gana3CartState> {
   }
 }
 
-final gana3CartControllerProvider = NotifierProvider.family<
+final gana3CartControllerProvider = NotifierProvider.autoDispose.family<
     Gana3CartController, Gana3CartState, String>(Gana3CartController.new);

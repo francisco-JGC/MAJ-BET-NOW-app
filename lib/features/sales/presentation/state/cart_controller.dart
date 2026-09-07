@@ -122,6 +122,6 @@ class CartController extends Notifier<CartState> {
 }
 
 final cartControllerProvider =
-    NotifierProvider.family<CartController, CartState, String>(
+    NotifierProvider.autoDispose.family<CartController, CartState, String>(
   CartController.new,
 );

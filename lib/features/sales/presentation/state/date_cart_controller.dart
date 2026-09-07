@@ -113,5 +113,5 @@ class DateCartController extends Notifier<DateCartState> {
   }
 }
 
-final dateCartControllerProvider = NotifierProvider.family<
+final dateCartControllerProvider = NotifierProvider.autoDispose.family<
     DateCartController, DateCartState, String>(DateCartController.new);
