@@ -16,6 +16,7 @@ import '../../../sale_limits/presentation/state/sale_limit_availability_provider
 import '../../../sale_limits/presentation/widgets/sale_limits_banner.dart';
 import '../../../sale_points/presentation/state/active_sale_point_controller.dart';
 import '../../../sales/domain/entities/bet.dart';
+import '../../../sales/domain/entities/date_bet.dart';
 import '../../../sales/presentation/state/cart_controller.dart';
 import '../../../sales/presentation/state/cart_state.dart';
 import '../../../sales/presentation/state/combo_cart_controller.dart';
@@ -204,6 +205,16 @@ class _GameDetailPageState extends ConsumerState<GameDetailPage> {
           }
         }
       case GameType.date:
+        final ctrl = ref.read(dateCartControllerProvider(game.id).notifier);
+        for (final l in lines) {
+          // Label format: "01 ene" (day padded + space + 3-letter month abbr)
+          final parts = l.label.trim().toLowerCase().split(' ');
+          if (parts.length != 2) continue;
+          final day = int.tryParse(parts[0]);
+          final monthIdx = kMonthAbbreviations.indexOf(parts[1]);
+          if (day == null || monthIdx == -1) continue;
+          ctrl.addSingle(day: day, month: monthIdx + 1, amount: l.amount);
+        }
       case GameType.multiSorteo:
         break;
     }
