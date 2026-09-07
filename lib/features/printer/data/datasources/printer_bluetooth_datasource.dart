@@ -241,7 +241,7 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
       ...g.row([
         PosColumn(text: 'Apuesta', width: 4, styles: infoStyle),
         PosColumn(text: 'Monto', width: 4, styles: infoCenter),
-        PosColumn(text: 'Premio', width: 4, styles: infoRight),
+        PosColumn(text: p.isFourDigit ? 'Tipo' : 'Premio', width: 4, styles: infoRight),
       ]),
       ..._dashedLine(g),
       for (var i = 0; i < p.lines.length; i++) ...[
@@ -261,6 +261,7 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
           // - En cualquier otro caso → centrado/derecha normal.
           // Juegos de fecha no aplican (sus etiquetas son texto, no números).
           final shiftLeft = !p.isDate
+              && !p.isFourDigit
               && p.lines[i].amount > 99
               && p.lines[i].prize > 9999;
           return g.row([
@@ -277,7 +278,9 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
                   : (shiftLeft ? numberStyle : numberCenter),
             ),
             PosColumn(
-              text: prize.format(p.lines[i].prize),
+              text: p.isFourDigit
+                  ? 'Exacto'
+                  : prize.format(p.lines[i].prize),
               width: 4,
               styles: p.isDate
                   ? dateRight

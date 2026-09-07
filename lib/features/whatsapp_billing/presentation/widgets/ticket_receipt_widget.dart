@@ -42,7 +42,7 @@ class TicketReceiptWidget extends StatelessWidget {
             ],
             _InfoBlock(payload: payload),
             const SizedBox(height: 10),
-            _LinesTable(lines: payload.lines),
+            _LinesTable(lines: payload.lines, isFourDigit: payload.isFourDigit),
             const SizedBox(height: 10),
             _TotalRow(total: payload.total),
             const SizedBox(height: 10),
@@ -143,8 +143,9 @@ class _InfoLine extends StatelessWidget {
 }
 
 class _LinesTable extends StatelessWidget {
-  const _LinesTable({required this.lines});
+  const _LinesTable({required this.lines, this.isFourDigit = false});
   final List<TicketLine> lines;
+  final bool isFourDigit;
 
   @override
   Widget build(BuildContext context) {

@@ -520,12 +520,14 @@ class _TicketMenu extends ConsumerWidget {
   }) {
     final summary = detail.summary;
     final isDate = game?.type == GameType.date;
+    final isFourDigit = game?.type == GameType.fourDigit;
     return printer.TicketPayload(
       id: summary.id,
       gameId: summary.gameId,
       gameSlug: game?.slug ?? '',
       gameName: game?.name ?? '—',
       isDate: isDate,
+      isFourDigit: isFourDigit,
       lines: detail.lines
           .map((l) => printer.TicketLine(
                 number: isDate

@@ -41,6 +41,7 @@ class TicketPayload extends Equatable {
     this.footer,
     this.copyKind = TicketCopyKind.original,
     this.isDate = false,
+    this.isFourDigit = false,
   });
 
   final String id;
@@ -59,6 +60,7 @@ class TicketPayload extends Equatable {
   final String? footer;
   final TicketCopyKind copyKind;
   final bool isDate;
+  final bool isFourDigit;
 
   int get total => lines.fold(0, (sum, l) => sum + l.amount);
   int get totalPrize => lines.fold(0, (sum, l) => sum + l.prize);
@@ -85,5 +87,6 @@ class TicketPayload extends Equatable {
         footer,
         copyKind,
         isDate,
+        isFourDigit,
       ];
 }

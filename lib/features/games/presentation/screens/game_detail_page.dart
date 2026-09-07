@@ -899,6 +899,7 @@ class _MultiSorteoGameViewState
             gameId: sub.id,
             gameSlug: sub.slug,
             gameName: sub.name,
+            isFourDigit: true,
             lines: cart.bets
                 .map((b) => TicketLine(
                       number: b.numberLabel,
