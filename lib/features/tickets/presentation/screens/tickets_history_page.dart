@@ -520,7 +520,7 @@ class _TicketMenu extends ConsumerWidget {
   }) {
     final summary = detail.summary;
     final isDate = game?.type == GameType.date;
-    final isFourDigit = game?.type == GameType.fourDigit;
+    final isFourDigit = game?.slug == 'juga4';
     return printer.TicketPayload(
       id: summary.id,
       gameId: summary.gameId,

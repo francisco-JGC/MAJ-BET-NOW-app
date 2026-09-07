@@ -279,7 +279,7 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
             ),
             PosColumn(
               text: p.isFourDigit
-                  ? 'Exacto'
+                  ? 'E'
                   : prize.format(p.lines[i].prize),
               width: 4,
               styles: p.isDate

@@ -234,7 +234,7 @@ class _LineRow extends StatelessWidget {
           ),
           const Spacer(),
           Text(
-            isFourDigit ? 'Exacto' : kAmountFormat.format(line.prize),
+            isFourDigit ? 'E' : kAmountFormat.format(line.prize),
             style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,

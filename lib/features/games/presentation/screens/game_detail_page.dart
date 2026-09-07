@@ -899,7 +899,7 @@ class _MultiSorteoGameViewState
             gameId: sub.id,
             gameSlug: sub.slug,
             gameName: sub.name,
-            isFourDigit: true,
+            isFourDigit: sub.slug == 'juga4',
             lines: cart.bets
                 .map((b) => TicketLine(
                       number: b.numberLabel,
@@ -1471,6 +1471,7 @@ Future<void> _printCombo(
       gameId: game.id,
       gameSlug: game.slug,
       gameName: game.name,
+      isFourDigit: game.slug == 'juga4',
       lines: cart.bets
           .map((b) => TicketLine(
                 number: b.numberLabel,
