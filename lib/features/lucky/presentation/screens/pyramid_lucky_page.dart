@@ -144,8 +144,8 @@ class _PyramidView extends StatelessWidget {
         ),
         child: Column(
           children: [
-            // Pyramid rendered tip-first (smallest row at top).
-            for (final row in rows.reversed)
+            // Base at top, tip at bottom.
+            for (final row in rows)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
