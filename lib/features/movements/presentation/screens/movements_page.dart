@@ -18,8 +18,8 @@ const _kAllTypes = '__all__';
 const _typeOptions = [
   (_kAllTypes, 'Todos'),
   ('expense', 'Gasto'),
-  ('deposit', 'Depósito / Cobro'),
-  ('withdrawal', 'Retiro / Crédito'),
+  ('deposit', 'Cobro'),
+  ('withdrawal', 'Ajuste de premio'),
   ('adjustment', 'Ajuste'),
 ];
 
@@ -29,8 +29,8 @@ const _typeOptions = [
   }
   return switch (type) {
     'expense'    => (Icons.arrow_downward, const Color(0xFFE11D48), 'Gasto'),
-    'deposit'    => (Icons.arrow_upward, const Color(0xFF059669), 'Depósito'),
-    'withdrawal' => (Icons.account_balance_wallet, const Color(0xFF2563EB), 'Retiro'),
+    'deposit'    => (Icons.arrow_downward, const Color(0xFFE11D48), 'Cobro'),
+    'withdrawal' => (Icons.arrow_upward, const Color(0xFF059669), 'Ajuste de premio'),
     'opening'    => (Icons.door_front_door_outlined, const Color(0xFF64748B), 'Apertura'),
     'closing'    => (Icons.door_back_door_outlined, const Color(0xFF64748B), 'Cierre'),
     'adjustment' => (Icons.tune, const Color(0xFF64748B), 'Ajuste'),
@@ -308,7 +308,7 @@ class _MovementTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (icon, color, label) = _typeMeta(item.type, item.isPrizePayment);
-    final isPositive = item.type == 'deposit';
+    final isPositive = item.type == 'withdrawal';
     final amountColor =
         isPositive ? const Color(0xFF059669) : const Color(0xFFE11D48);
     final sign = isPositive ? '+' : '-';
