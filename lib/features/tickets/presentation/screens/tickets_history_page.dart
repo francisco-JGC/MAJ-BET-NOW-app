@@ -17,6 +17,7 @@ import '../../../printer/domain/entities/ticket_payload.dart' as printer;
 import '../../../printer/presentation/state/printer_controller.dart';
 import '../../../whatsapp_billing/presentation/services/ticket_image_share_service.dart';
 import '../../domain/entities/ticket_detail.dart';
+import '../../../sale_points/presentation/state/active_sale_point_controller.dart';
 import '../../domain/entities/ticket_summary.dart';
 import '../../domain/repositories/tickets_repository.dart';
 import '../state/tickets_history_controller.dart';
@@ -465,6 +466,7 @@ class _TicketMenu extends ConsumerWidget {
         final payload = _buildPayload(
           detail: detail,
           seller: ref.read(currentUserProvider)?.name,
+          salePoint: ref.read(activeSalePointProvider).selected?.name,
           copyKind: printer.TicketCopyKind.reprint,
         );
         await ref.read(printerControllerProvider.notifier).printTicket(payload);
@@ -498,6 +500,7 @@ class _TicketMenu extends ConsumerWidget {
         final payload = _buildPayload(
           detail: detail,
           seller: ref.read(currentUserProvider)?.name,
+          salePoint: ref.read(activeSalePointProvider).selected?.name,
           copyKind: printer.TicketCopyKind.resend,
         );
         if (!context.mounted) return;
@@ -516,6 +519,7 @@ class _TicketMenu extends ConsumerWidget {
   printer.TicketPayload _buildPayload({
     required TicketDetail detail,
     required String? seller,
+    String? salePoint,
     printer.TicketCopyKind copyKind = printer.TicketCopyKind.original,
   }) {
     final summary = detail.summary;
@@ -546,6 +550,7 @@ class _TicketMenu extends ConsumerWidget {
       date: summary.createdAt,
       drawAt: summary.drawAt,
       seller: seller,
+      salePoint: salePoint,
       client: summary.client,
       copyKind: copyKind,
     );
