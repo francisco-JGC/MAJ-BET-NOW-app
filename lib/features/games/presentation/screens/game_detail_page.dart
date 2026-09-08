@@ -13,7 +13,6 @@ import '../../../printer/domain/entities/ticket_payload.dart';
 import '../../../printer/presentation/state/printer_controller.dart';
 import '../../../sale_limits/domain/repositories/sale_limits_repository.dart';
 import '../../../sale_limits/presentation/state/sale_limit_availability_provider.dart';
-import '../../../sale_limits/presentation/widgets/sale_limits_banner.dart';
 import '../../../sale_points/presentation/state/active_sale_point_controller.dart';
 import '../../../sales/domain/entities/bet.dart';
 import '../../../sales/domain/entities/date_bet.dart';
@@ -288,7 +287,6 @@ class _RegularGameView extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          SaleLimitsBannerAuto(gameId: game.id),
           QuickBetForm(
             key: ValueKey('quick-bet-form-$formResetKey'),
             onSubmit: controller.addSingle,
@@ -446,7 +444,6 @@ class _DateGameView extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          SaleLimitsBannerAuto(gameId: game.id),
           QuickDateBetForm(
             key: ValueKey('quick-date-bet-form-$formResetKey'),
             onSubmit: controller.addSingle,
@@ -552,7 +549,6 @@ class _MultiSorteoGameViewState
             }),
           ),
           if (sub != null) ...[
-            SaleLimitsBannerAuto(gameId: sub.id),
             _cartBodyFor(sub),
             _AvailableDrawsSelector(
               gameId: sub.id,
@@ -1208,7 +1204,6 @@ class _ComboGameView extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          SaleLimitsBannerAuto(gameId: game.id),
           QuickComboBetForm(
             key: ValueKey('quick-combo-bet-form-$formResetKey'),
             onSubmit: controller.addSingle,
@@ -1333,7 +1328,6 @@ class _Gana3GameView extends ConsumerWidget {
       ),
       body: Column(
         children: [
-          SaleLimitsBannerAuto(gameId: game.id),
           QuickGana3BetForm(
             key: ValueKey('quick-gana3-bet-form-$formResetKey'),
             onSubmit: controller.addSingle,
