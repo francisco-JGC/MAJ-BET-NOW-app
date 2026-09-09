@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../core/errors/failures.dart';
 import '../../../../core/session/current_user.dart';
 import '../../../../core/utils/currency.dart';
 import '../../../../core/utils/prize.dart';
@@ -1753,8 +1754,14 @@ Future<void> _persistAndPrintInner(
   final result = await getIt<CreateTicket>().call(request);
   final receipt = result.fold<TicketReceipt?>(
     (failure) {
+      final isLimitExceeded = failure is ServerFailure &&
+          failure.message.toLowerCase().contains('limite');
       messenger.showSnackBar(SnackBar(
-        content: Text('No se pudo registrar el ticket: ${failure.message}'),
+        content: Text(
+          isLimitExceeded
+              ? 'No se registró el ticket, Excede el límite de venta'
+              : 'No se pudo registrar el ticket: ${failure.message}',
+        ),
       ));
       return null;
     },
