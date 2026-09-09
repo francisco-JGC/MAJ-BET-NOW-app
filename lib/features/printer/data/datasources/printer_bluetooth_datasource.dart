@@ -179,20 +179,6 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     final money = kAmountFormat;
     final prize = NumberFormat('#0', 'en_US');
 
-    // Info del ticket y header de columnas: negrita, tamaño normal.
-    const infoStyle = PosStyles(bold: true, align: PosAlign.left);
-    const infoCenter = PosStyles(bold: true, align: PosAlign.center);
-    const infoRight = PosStyles(bold: true, align: PosAlign.right);
-    // Números: negrita + ancho doble (width:size2). La altura NO cambia,
-    // solo el ancho — los caracteres son más anchos/legibles sin estirarse.
-    const numberStyle = PosStyles(bold: true, width: PosTextSize.size2, align: PosAlign.left);
-    const numberCenter = PosStyles(bold: true, width: PosTextSize.size2, align: PosAlign.center);
-    const numberRight = PosStyles(bold: true, width: PosTextSize.size2, align: PosAlign.right);
-    // Para juegos de fecha las etiquetas ("01 Ene") son más largas —
-    // usamos tamaño normal (size1) para que quepan sin truncarse.
-    const dateStyle = PosStyles(bold: true, align: PosAlign.left);
-    const dateCenter = PosStyles(bold: true, align: PosAlign.center);
-    const dateRight = PosStyles(bold: true, align: PosAlign.right);
     // Sanitizamos campos alimentados por el usuario (nombre del vendedor,
     // sucursal, cliente, footer) porque el codec ESC/POS rechaza codepoints
     // fuera del codepage (emojis, símbolos raros) con `ArgumentError:
@@ -216,33 +202,60 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
       TicketCopyKind.resend => 'BOLETO REENVIADO',
       TicketCopyKind.original => null,
     };
+
+    // --- Formato de columnas ---
+    // Papel mm58 = 32 columnas en size1, 16 columnas en size2.
+    // Dividimos en tres secciones de igual ancho físico:
+    //   Física 0-11  → size1: 12 chars  |  size2: 6 chars
+    //   Física 12-21 → size1: 10 chars  |  size2: 5 chars
+    //   Física 22-31 → size1: 10 chars  |  size2: 5 chars
+    //
+    // Usamos g.text() con strings preformateados en lugar de g.row() para
+    // evitar el problema de SmartPOS: g.row() emite ESC ! (cambio de modo)
+    // dentro de la línea por cada columna; muchos SmartPOS lo procesan como
+    // comando de "línea siguiente" en vez de inline, desalineando las
+    // columnas y mezclando los números.
+    String rowSize1(String left, String mid, String right) =>
+        _colFit(left, 12, left: true) +
+        _colCenter(mid, 10) +
+        _colFit(right, 10, left: false);
+
+    String rowSize2(String left, String mid, String right) =>
+        _colFit(left, 6, left: true) +
+        _colCenter(mid, 5) +
+        _colFit(right, 5, left: false);
+
+    // shiftLeft: número Y monto anchos → todo izquierda para evitar solapamiento
+    String rowSize2Left(String left, String mid, String right) =>
+        _colFit(left, 6, left: true) +
+        _colFit(mid, 5, left: true) +
+        _colFit(right, 5, left: true);
+
     return [
       ...g.clearStyle(),
       ...g.setStyles(const PosStyles(align: PosAlign.center)),
-      if (copyBanner != null) ...[
-        ...g.text(copyBanner, styles: infoCenter),
-      ],
-      ...g.text('Folio: ${p.folio}', styles: infoCenter),
-      ...g.text('Fecha: ${formatDateTime(p.date)}', styles: infoCenter),
-      ...g.text('Juego: $gameName', styles: infoCenter),
+      if (copyBanner != null)
+        ...g.text(copyBanner, styles: const PosStyles(bold: true, align: PosAlign.center)),
+      ...g.text('Folio: ${p.folio}', styles: const PosStyles(bold: true, align: PosAlign.center)),
+      ...g.text('Fecha: ${formatDateTime(p.date)}', styles: const PosStyles(bold: true, align: PosAlign.center)),
+      ...g.text('Juego: $gameName', styles: const PosStyles(bold: true, align: PosAlign.center)),
       if (p.drawAt != null)
         ...g.text(
           'Sorteo: ${DateFormat('h:mm a', 'en_US').format(p.drawAt!.toLocal()).toLowerCase()}',
-          styles: infoCenter,
+          styles: const PosStyles(bold: true, align: PosAlign.center),
         ),
-      ...g.text('Cliente: $client', styles: infoCenter),
+      ...g.text('Cliente: $client', styles: const PosStyles(bold: true, align: PosAlign.center)),
       if (salePoint.isNotEmpty)
-        ...g.text('Puesto: $salePoint', styles: infoCenter),
+        ...g.text('Puesto: $salePoint', styles: const PosStyles(bold: true, align: PosAlign.center)),
       if (seller.isNotEmpty)
-        ...g.text('Vendedor: $seller', styles: infoCenter),
+        ...g.text('Vendedor: $seller', styles: const PosStyles(bold: true, align: PosAlign.center)),
       ..._dashedLine(g),
-      // Columnas iguales (4:4:4) — "Monto" queda en el tercio central del
-      // papel, lo que lo posiciona exactamente en el centro visual.
-      ...g.row([
-        PosColumn(text: 'Apuesta', width: 4, styles: infoStyle),
-        PosColumn(text: 'Monto', width: 4, styles: infoCenter),
-        PosColumn(text: p.isFourDigit ? 'Tipo' : 'Premio', width: 4, styles: infoRight),
-      ]),
+      // Header de columnas: una sola llamada g.text() con string preformateado
+      // → 1 solo ESC ! al inicio, sin cambios de modo a mitad de línea.
+      ...g.text(
+        rowSize1('Apuesta', 'Monto', p.isFourDigit ? 'Tipo' : 'Premio'),
+        styles: const PosStyles(bold: true, align: PosAlign.left),
+      ),
       ..._dashedLine(g),
       for (var i = 0; i < p.lines.length; i++) ...[
         if (p.lines[i].subGameName != null &&
@@ -254,39 +267,31 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
             styles: const PosStyles(bold: true),
           ),
         ],
+        // Juegos de fecha: etiquetas largas ("01 Ene") → size1 con rowSize1.
+        // Juegos de número: size2 con rowSize2 (o rowSize2Left si ambos anchos).
         ...(() {
-          // Regla de alineación para juegos de número:
-          // - monto > 2 dígitos (>= 100) Y premio > 4 dígitos (>= 10 000)
-          //   → ambos a la IZQUIERDA para que no se monten entre sí.
-          // - En cualquier otro caso → centrado/derecha normal.
-          // Juegos de fecha no aplican (sus etiquetas son texto, no números).
-          final shiftLeft = !p.isDate
-              && !p.isFourDigit
+          if (p.isDate) {
+            return g.text(
+              rowSize1(
+                p.lines[i].number,
+                money.format(p.lines[i].amount),
+                prize.format(p.lines[i].prize),
+              ),
+              styles: const PosStyles(bold: true, align: PosAlign.left),
+            );
+          }
+          // shiftLeft: monto > 2 dígitos (>=100) Y premio > 4 dígitos (>=10000)
+          // → todo izquierda para que no se monte en los 5 chars del size2.
+          final shiftLeft = !p.isFourDigit
               && p.lines[i].amount > 99
               && p.lines[i].prize > 9999;
-          return g.row([
-            PosColumn(
-              text: p.lines[i].number,
-              width: 4,
-              styles: p.isDate ? dateStyle : numberStyle,
-            ),
-            PosColumn(
-              text: money.format(p.lines[i].amount),
-              width: 4,
-              styles: p.isDate
-                  ? dateCenter
-                  : (shiftLeft ? numberStyle : numberCenter),
-            ),
-            PosColumn(
-              text: p.isFourDigit
-                  ? 'E'
-                  : prize.format(p.lines[i].prize),
-              width: 4,
-              styles: p.isDate
-                  ? dateRight
-                  : (shiftLeft ? numberStyle : numberRight),
-            ),
-          ]);
+          final prizeText = p.isFourDigit ? 'E' : prize.format(p.lines[i].prize);
+          return g.text(
+            shiftLeft
+                ? rowSize2Left(p.lines[i].number, money.format(p.lines[i].amount), prizeText)
+                : rowSize2(p.lines[i].number, money.format(p.lines[i].amount), prizeText),
+            styles: const PosStyles(bold: true, width: PosTextSize.size2, align: PosAlign.left),
+          );
         })(),
       ],
       ..._dashedLine(g),
@@ -331,5 +336,22 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     // 32 columnas = ancho de una impresora de 58mm en fuente por defecto.
     const dashed = '--------------------------------';
     return g.text(dashed, styles: const PosStyles(align: PosAlign.center));
+  }
+
+  /// Ajusta [s] a exactamente [width] chars: trunca si es más largo,
+  /// rellena con espacios si es más corto. [left] = true → rellena a la
+  /// derecha (alineación izquierda); false → rellena a la izquierda
+  /// (alineación derecha).
+  static String _colFit(String s, int width, {required bool left}) {
+    if (s.length >= width) return s.substring(0, width);
+    return left ? s.padRight(width) : s.padLeft(width);
+  }
+
+  /// Centra [s] dentro de [width] chars, rellena con espacios.
+  static String _colCenter(String s, int width) {
+    if (s.length >= width) return s.substring(0, width);
+    final pad = width - s.length;
+    final lPad = pad ~/ 2;
+    return '${' ' * lPad}$s${' ' * (pad - lPad)}';
   }
 }
