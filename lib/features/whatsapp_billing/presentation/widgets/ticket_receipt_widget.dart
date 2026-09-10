@@ -165,11 +165,21 @@ class _LinesTable extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Text('Apuesta', style: headerStyle),
-              const Spacer(),
-              const Text('Monto', style: headerStyle),
-              const Spacer(),
-              Text(isFourDigit ? 'Tipo' : 'Premio', style: headerStyle),
+              const Expanded(child: Text('Apuesta', style: headerStyle)),
+              const Expanded(
+                child: Text(
+                  'Monto',
+                  style: headerStyle,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  isFourDigit ? 'Tipo' : 'Premio',
+                  style: headerStyle,
+                  textAlign: TextAlign.right,
+                ),
+              ),
             ],
           ),
         ),
@@ -205,41 +215,36 @@ class _LineRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const style = TextStyle(
+      fontSize: 22,
+      fontWeight: FontWeight.w800,
+      color: Colors.black,
+      fontFeatures: [FontFeature.tabularFigures()],
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         children: [
-          Flexible(
+          Expanded(
             child: Text(
               line.number,
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                color: Colors.black,
-                fontFeatures: [FontFeature.tabularFigures()],
-              ),
+              style: style,
             ),
           ),
-          const Spacer(),
-          Text(
-            kAmountFormat.format(line.amount),
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: Colors.black,
-              fontFeatures: [FontFeature.tabularFigures()],
+          Expanded(
+            child: Text(
+              kAmountFormat.format(line.amount),
+              textAlign: TextAlign.center,
+              style: style,
             ),
           ),
-          const Spacer(),
-          Text(
-            isFourDigit ? 'E' : kAmountFormat.format(line.prize),
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: Colors.black,
-              fontFeatures: [FontFeature.tabularFigures()],
+          Expanded(
+            child: Text(
+              isFourDigit ? 'E' : kAmountFormat.format(line.prize),
+              textAlign: TextAlign.right,
+              style: style,
             ),
           ),
         ],
