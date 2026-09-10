@@ -30,7 +30,12 @@ class TicketImageShareService {
     required TicketPayload payload,
   }) async {
     try {
-      final bytes = await _capture(context, payload);
+      // Timeout defensivo: en split-screen Android, endOfFrame puede tardar
+      // indefinidamente si Flutter reduce el ritmo de renderizado. 6 s es
+      // suficiente para cualquier ticket normal; si falla, el caller muestra
+      // snackbar de "imagen no generada" y el boleto ya quedó en el backend.
+      final bytes = await _capture(context, payload)
+          .timeout(const Duration(seconds: 6), onTimeout: () => null);
       if (bytes == null) return false;
 
       final tempDir = await getTemporaryDirectory();

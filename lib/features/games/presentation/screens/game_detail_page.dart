@@ -1798,9 +1798,14 @@ Future<void> _persistAndPrintInner(
           .share(context: context, payload: payload);
       if (!context.mounted) return;
       if (!shared) {
+        // El boleto ya quedó en el backend — limpiamos igual para que el
+        // carrito no quede sucio (split-screen, timeout de captura, etc.).
+        _pendingRequestIdByFingerprint.remove(fingerprint);
+        onSuccess();
         messenger.showSnackBar(SnackBar(
-          content: Text('Ticket #${receipt.folio} registrado, pero falló la '
-              'generación de la imagen para compartir.'),
+          content: Text('Ticket #${receipt.folio} registrado. '
+              'No se pudo generar la imagen para compartir.'),
+          duration: const Duration(seconds: 5),
         ));
         return;
       }
