@@ -104,8 +104,11 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     }
   }
 
+  static const _kWriteTimeout = Duration(seconds: 15);
+
   Future<void> _write(List<int> bytes) async {
-    final ok = await PrintBluetoothThermal.writeBytes(bytes);
+    final ok = await PrintBluetoothThermal.writeBytes(bytes)
+        .timeout(_kWriteTimeout, onTimeout: () => false);
     if (!ok) {
       throw Exception('No fue posible enviar los datos a la impresora');
     }

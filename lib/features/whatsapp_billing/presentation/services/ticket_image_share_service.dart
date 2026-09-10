@@ -38,14 +38,15 @@ class TicketImageShareService {
       final file = File('${tempDir.path}/ticket-$safeFolio.png');
       await file.writeAsBytes(bytes);
 
-      await Share.shareXFiles(
+      // Fire-and-forget: el boleto ya quedó persistido en el backend antes
+      // de llegar acá. No esperamos que el usuario complete el share —
+      // en iOS Share.shareXFiles resuelve al cerrar el share sheet, lo que
+      // mantendría el spinner bloqueado mientras el vendedor elige contacto.
+      unawaited(Share.shareXFiles(
         [XFile(file.path, mimeType: 'image/png')],
-        // Caption mínimo: solo el folio para que el receptor tenga
-        // referencia si le llegan varios tickets. Toda la info del ticket
-        // está en la imagen — no duplicamos acá.
         text: 'Ticket #${payload.folio}',
         subject: 'Ticket #${payload.folio}',
-      );
+      ));
       return true;
     } catch (e) {
       // El caller ya loggea o muestra snackbar según necesite. Acá tragamos
