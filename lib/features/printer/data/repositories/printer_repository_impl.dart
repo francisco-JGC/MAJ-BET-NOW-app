@@ -105,7 +105,11 @@ class PrinterRepositoryImpl implements PrinterRepository {
   Future<Either<Failure, Unit>> saveLastConnected(PrinterDevice device) async {
     try {
       await local.saveLastConnected(
-        PrinterDeviceModel(name: device.name, address: device.address),
+        PrinterDeviceModel(
+          name: device.name,
+          address: device.address,
+          isSmartPos: device.isSmartPos,
+        ),
       );
       return const Right(unit);
     } catch (e) {
