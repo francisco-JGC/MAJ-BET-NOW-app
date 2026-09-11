@@ -208,10 +208,21 @@ class _ActionsBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isSmartPos = state.connectedDevice?.isSmartPos ?? false;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
+          SwitchListTile(
+            title: const Text('Modo SmartPOS'),
+            subtitle: const Text(
+              'Actívalo si la impresora integrada imprime solo el 50% del papel',
+            ),
+            value: isSmartPos,
+            onChanged: (v) => controller.setSmartPos(value: v),
+            contentPadding: EdgeInsets.zero,
+          ),
+          const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
             child: FilledButton.icon(

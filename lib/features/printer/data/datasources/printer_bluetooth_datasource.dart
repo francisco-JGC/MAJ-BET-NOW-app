@@ -17,7 +17,7 @@ abstract interface class PrinterBluetoothDatasource {
   Future<void> disconnect();
   Future<bool> isConnected();
   Future<void> printTest(String address);
-  Future<void> printTicket(String address, TicketPayload payload);
+  Future<void> printTicket(String address, TicketPayload payload, {bool isSmartPos = false});
 }
 
 class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
@@ -94,10 +94,10 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
   }
 
   @override
-  Future<void> printTicket(String address, TicketPayload payload) async {
+  Future<void> printTicket(String address, TicketPayload payload, {bool isSmartPos = false}) async {
     await connect(address);
     try {
-      final bytes = await _buildTicketBytes(payload);
+      final bytes = await _buildTicketBytes(payload, isSmartPos: isSmartPos);
       await _write(bytes);
     } finally {
       try { await disconnect(); } catch (_) {}
@@ -165,7 +165,7 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     ];
   }
 
-  Future<List<int>> _buildTicketBytes(TicketPayload p) async {
+  Future<List<int>> _buildTicketBytes(TicketPayload p, {bool isSmartPos = false}) async {
     final profile = await CapabilityProfile.load();
     final g = Generator(PaperSize.mm58, profile);
     final dateOnly = DateFormat('dd/MM/yyyy');
@@ -270,15 +270,15 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
             styles: const PosStyles(bold: true),
           ),
         ],
-        // Juegos de fecha: etiquetas largas ("01 Ene") → size1 con rowSize1.
-        // Juegos de número: size2 con rowSize2 (o rowSize2Left si ambos anchos).
+        // Juegos de fecha: etiquetas largas ("01 Ene") → size1 siempre.
+        // Juegos de número: size2 (BT) o size1 (SmartPOS — ignora width×2).
         ...(() {
-          if (p.isDate) {
+          if (p.isDate || isSmartPos) {
             return g.text(
               rowSize1(
                 p.lines[i].number,
                 money.format(p.lines[i].amount),
-                prize.format(p.lines[i].prize),
+                p.isFourDigit ? 'E' : prize.format(p.lines[i].prize),
               ),
               styles: const PosStyles(bold: true, align: PosAlign.left),
             );

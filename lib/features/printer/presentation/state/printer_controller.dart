@@ -102,6 +102,15 @@ class PrinterController extends Notifier<PrinterState> {
     state = state.copyWith(isConnecting: false, connectedDevice: device);
   }
 
+  /// Activa/desactiva el modo SmartPOS para la impresora configurada.
+  Future<void> setSmartPos({required bool value}) async {
+    final device = state.connectedDevice;
+    if (device == null) return;
+    final updated = device.copyWith(isSmartPos: value);
+    await _repository.saveLastConnected(updated);
+    state = state.copyWith(connectedDevice: updated);
+  }
+
   /// Olvida la impresora configurada. No hay socket que cerrar.
   Future<void> disconnect() async {
     state = state.copyWith(clearConnectedDevice: true);
@@ -125,13 +134,17 @@ class PrinterController extends Notifier<PrinterState> {
   }
 
   Future<void> printTicket(TicketPayload payload) async {
-    final address = state.connectedDevice?.address;
-    if (address == null) {
+    final device = state.connectedDevice;
+    if (device == null) {
       state = state.copyWith(errorMessage: 'No hay impresora configurada.');
       return;
     }
     state = state.copyWith(isPrinting: true, clearError: true);
-    final result = await _repository.printTicket(address, payload);
+    final result = await _repository.printTicket(
+      device.address,
+      payload,
+      isSmartPos: device.isSmartPos,
+    );
     final failure = result.fold<String?>((f) => f.message, (_) => null);
     state = state.copyWith(isPrinting: false, errorMessage: failure);
   }
