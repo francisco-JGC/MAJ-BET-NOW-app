@@ -1757,13 +1757,20 @@ Future<void> _persistAndPrintInner(
       final msg = failure.message.toLowerCase();
       final isLimitExceeded =
           msg.contains('limite') || msg.contains('límite');
-      messenger.showSnackBar(SnackBar(
-        content: Text(
-          isLimitExceeded
-              ? 'No se pudo registrar el ticket, Alcanzó el límite de venta'
-              : 'No se pudo registrar el ticket: ${failure.message}',
-        ),
-      ));
+      String displayMsg;
+      if (isLimitExceeded) {
+        // Extrae el número del mensaje del backend, ej:
+        // "el Numero 07 alcanzo el limite de 50 para este sorteo..."
+        final match = RegExp(r'numero\s+(\S+)', caseSensitive: false)
+            .firstMatch(failure.message);
+        final number = match?.group(1);
+        displayMsg = number != null
+            ? 'El número $number alcanzó el límite de ventas'
+            : 'No se pudo registrar el ticket, Alcanzó el límite de ventas';
+      } else {
+        displayMsg = 'No se pudo registrar el ticket: ${failure.message}';
+      }
+      messenger.showSnackBar(SnackBar(content: Text(displayMsg)));
       return null;
     },
     (r) => r,
