@@ -157,7 +157,10 @@ class _CountdownTextState extends State<_CountdownText> {
   }
 
   String _format(Duration d) {
-    if (widget.longFormat && d.inHours >= 1) {
+    // Siempre formato largo cuando queda ≥ 1 hora — evita mostrar "04:04"
+    // (MM:SS) cuando en realidad restan horas (e.g. ventana de sorteo que
+    // enlaza directo con el cierre nocturno hacia el día siguiente).
+    if (d.inHours >= 1) {
       final h = d.inHours;
       final m = d.inMinutes.remainder(60);
       return '$h h $m min';

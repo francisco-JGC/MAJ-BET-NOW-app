@@ -159,20 +159,42 @@ class GameLockController extends Notifier<GameLockState> {
         // día siguiente. Excluimos ventanas nocturnas al buscar next para
         // no encadenar cierres nocturnos como si fueran sorteos.
         final next = windows
-            .where((x) =>
-                !x.isNightly && x.drawAt.isAfter(w.drawAt))
+            .where((x) => !x.isNightly && x.drawAt.isAfter(w.drawAt))
             .fold<_Window?>(null, (acc, x) => acc ?? x);
+
+        // Bug fix: si esta ventana de sorteo está seguida INMEDIATAMENTE
+        // por una nocturna (lockStart nocturna ≈ lockEnd de esta), el
+        // juego no reabre en w.lockEnd — pasa directo al cierre nocturno.
+        // Mostramos las 06:00 del día siguiente como verdadero reopenAt
+        // para que el countdown refleje el tiempo real de espera.
+        var effectiveReopenAt = w.lockEnd;
+        var effectiveIsNightly = w.isNightly;
+        if (!w.isNightly) {
+          final bridgeNightly = windows.fold<_Window?>(null, (acc, x) {
+            if (acc != null || !x.isNightly) return acc;
+            // Tolerancia de 1 min: lockStart nocturna ≈ lockEnd sorteo.
+            if (x.lockStart.difference(w.lockEnd).inMinutes.abs() > 1) {
+              return acc;
+            }
+            return x;
+          });
+          if (bridgeNightly != null) {
+            effectiveReopenAt = bridgeNightly.lockEnd;
+            effectiveIsNightly = true;
+          }
+        }
+
         state = GameLockState(
           status: GameLockStatus.locked,
           // En cierre nocturno no hay sorteo real "actual" — omitimos
           // currentDrawAt/currentCutoffMinutes para que el UI muestre
           // el mensaje adecuado.
-          currentDrawAt: w.isNightly ? null : w.drawAt,
-          currentCutoffMinutes: w.isNightly ? null : w.cutoffMinutes,
-          reopenAt: w.lockEnd,
+          currentDrawAt: effectiveIsNightly ? null : w.drawAt,
+          currentCutoffMinutes: effectiveIsNightly ? null : w.cutoffMinutes,
+          reopenAt: effectiveReopenAt,
           nextDrawAt: next?.drawAt,
           nextCutoffMinutes: next?.cutoffMinutes,
-          isNightly: w.isNightly,
+          isNightly: effectiveIsNightly,
         );
         return;
       }
