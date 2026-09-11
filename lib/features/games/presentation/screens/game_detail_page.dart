@@ -1754,12 +1754,13 @@ Future<void> _persistAndPrintInner(
   final result = await getIt<CreateTicket>().call(request);
   final receipt = result.fold<TicketReceipt?>(
     (failure) {
-      final isLimitExceeded = failure is ServerFailure &&
-          failure.message.toLowerCase().contains('limite');
+      final msg = failure.message.toLowerCase();
+      final isLimitExceeded =
+          msg.contains('limite') || msg.contains('límite');
       messenger.showSnackBar(SnackBar(
         content: Text(
           isLimitExceeded
-              ? 'No se registró el ticket, Excede el límite de venta'
+              ? 'No se pudo registrar el ticket, Alcanzó el límite de venta'
               : 'No se pudo registrar el ticket: ${failure.message}',
         ),
       ));
