@@ -32,35 +32,43 @@ class DrawTotalsPage extends ConsumerWidget {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () =>
-            ref.read(drawTotalsControllerProvider.notifier).refresh(),
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            DateRangeField(
-              from: filters.from,
-              to: filters.to,
-              onChanged: (from, to) => ref
-                  .read(drawTotalsFiltersProvider.notifier)
-                  .setRange(from, to),
-            ),
-            const SizedBox(height: 16),
-            state.when(
-              loading: () => const Padding(
-                padding: EdgeInsets.symmetric(vertical: 40),
-                child: Center(child: CircularProgressIndicator()),
+      body: Column(
+        children: [
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () =>
+                  ref.read(drawTotalsControllerProvider.notifier).refresh(),
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  DateRangeField(
+                    from: filters.from,
+                    to: filters.to,
+                    onChanged: (from, to) => ref
+                        .read(drawTotalsFiltersProvider.notifier)
+                        .setRange(from, to),
+                  ),
+                  const SizedBox(height: 16),
+                  state.when(
+                    loading: () => const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (err, _) => _ErrorBox(
+                      message: err.toString(),
+                      onRetry: () => ref
+                          .read(drawTotalsControllerProvider.notifier)
+                          .refresh(),
+                    ),
+                    data: (items) =>
+                        _Content(items: items, gamesById: gamesById),
+                  ),
+                ],
               ),
-              error: (err, _) => _ErrorBox(
-                message: err.toString(),
-                onRetry: () => ref
-                    .read(drawTotalsControllerProvider.notifier)
-                    .refresh(),
-              ),
-              data: (items) => _Content(items: items, gamesById: gamesById),
             ),
-          ],
-        ),
+          ),
+          _TotalsBar(totals: _aggregate(state.value ?? const [])),
+        ],
       ),
     );
   }
@@ -153,7 +161,7 @@ class _HeaderStats extends StatelessWidget {
           Container(width: 1, height: 34, color: Colors.white24),
           Expanded(
             child: _HeaderStat(
-              label: 'Ventas',
+              label: 'Facturado',
               value: kCurrencyFormat.format(totals.billed),
               small: true,
             ),
@@ -161,7 +169,7 @@ class _HeaderStats extends StatelessWidget {
           Container(width: 1, height: 34, color: Colors.white24),
           Expanded(
             child: _HeaderStat(
-              label: 'Premios',
+              label: 'Ganado',
               value: kCurrencyFormat.format(totals.wonPrize),
               small: true,
             ),
@@ -348,7 +356,7 @@ class _DrawCard extends StatelessWidget {
             children: [
               Expanded(
                 child: _StatCell(
-                  label: 'Ventas',
+                  label: 'Facturado',
                   value: kCurrencyFormat.format(item.billed),
                   color: Colors.green.shade700,
                 ),
@@ -356,7 +364,7 @@ class _DrawCard extends StatelessWidget {
               Container(width: 1, height: 32, color: Colors.grey.shade200),
               Expanded(
                 child: _StatCell(
-                  label: 'Premios',
+                  label: 'Ganado',
                   value: kCurrencyFormat.format(item.wonPrize),
                   color: item.wonPrize > 0
                       ? Colors.red.shade700
@@ -458,6 +466,80 @@ class _StatCell extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _TotalsBar extends StatelessWidget {
+  const _TotalsBar({required this.totals});
+
+  final _Totals totals;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        border: Border(top: BorderSide(color: theme.dividerColor)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          children: [
+            Expanded(
+              child: _TotalCell(
+                label: 'Facturado',
+                value: totals.billed,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _TotalCell(
+                label: 'Ganado',
+                value: totals.wonPrize,
+                color: Colors.red.shade700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TotalCell extends StatelessWidget {
+  const _TotalCell({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final int value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(color: Colors.grey.shade700, fontSize: 12),
+        ),
+        Text(
+          kCurrencyFormat.format(value),
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 }

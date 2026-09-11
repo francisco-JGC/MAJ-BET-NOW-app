@@ -16,10 +16,10 @@ import '../state/movements_controller.dart';
 const _kAllTypes = '__all__';
 
 const _typeOptions = [
-  (_kAllTypes, 'Todos'),
+  (_kAllTypes, 'Todos los tipos'),
   ('expense', 'Gasto'),
-  ('deposit', 'Cobro'),
-  ('withdrawal', 'Ajuste de premio'),
+  ('deposit', 'Depósito / Cobro'),
+  ('withdrawal', 'Retiro / Ajuste de premio'),
   ('adjustment', 'Ajuste'),
 ];
 
