@@ -1759,14 +1759,14 @@ Future<void> _persistAndPrintInner(
           msg.contains('limite') || msg.contains('límite');
       String displayMsg;
       if (isLimitExceeded) {
-        // Extrae el número del mensaje del backend, ej:
-        // "el Numero 07 alcanzo el limite de 50 para este sorteo..."
-        final match = RegExp(r'numero\s+(\S+)', caseSensitive: false)
+        // El backend manda: El número "03" alcanzó el límite...
+        //                   Tu cuota para el número "03 ene" es de...
+        final match = RegExp(r'n[uú]mero[^"]*"([^"]+)"')
             .firstMatch(failure.message);
         final number = match?.group(1);
         displayMsg = number != null
-            ? 'El número $number alcanzó el límite de ventas'
-            : 'No se pudo registrar el ticket, Alcanzó el límite de ventas';
+            ? 'No se pudo registrar el ticket: El número $number alcanzó el límite de ventas'
+            : 'No se pudo registrar el ticket: Alcanzó el límite de ventas';
       } else {
         displayMsg = 'No se pudo registrar el ticket: ${failure.message}';
       }
