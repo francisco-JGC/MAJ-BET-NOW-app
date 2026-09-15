@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -128,9 +130,18 @@ class PrinterController extends Notifier<PrinterState> {
       return;
     }
     state = state.copyWith(isPrinting: true, clearError: true);
-    final result = await _repository.printTest(address);
-    final failure = result.fold<String?>((f) => f.message, (_) => null);
-    state = state.copyWith(isPrinting: false, errorMessage: failure);
+    String? failure;
+    try {
+      final result =
+          await _repository.printTest(address).timeout(const Duration(seconds: 35));
+      failure = result.fold<String?>((f) => f.message, (_) => null);
+    } on TimeoutException {
+      failure = 'La impresora tardó demasiado. Reiniciá el Bluetooth e intentá de nuevo.';
+    } catch (e) {
+      failure = 'Error al imprimir: $e';
+    } finally {
+      state = state.copyWith(isPrinting: false, errorMessage: failure);
+    }
   }
 
   Future<void> printTicket(TicketPayload payload) async {
@@ -140,13 +151,25 @@ class PrinterController extends Notifier<PrinterState> {
       return;
     }
     state = state.copyWith(isPrinting: true, clearError: true);
-    final result = await _repository.printTicket(
-      device.address,
-      payload,
-      isSmartPos: device.isSmartPos,
-    );
-    final failure = result.fold<String?>((f) => f.message, (_) => null);
-    state = state.copyWith(isPrinting: false, errorMessage: failure);
+    // Timeout total: connect (10 s) + buildBytes + writeBytes (15 s) +
+    // post-write delay (máx 6 s) + margen = 35 s. Cubre el caso donde el
+    // thread nativo BT queda bloqueado por un write anterior y el siguiente
+    // connect() nunca recibe respuesta — sin esto isPrinting se queda en
+    // true para siempre y el botón queda inutilizable hasta reiniciar la app.
+    String? failure;
+    try {
+      final result = await _repository
+          .printTicket(device.address, payload, isSmartPos: device.isSmartPos)
+          .timeout(const Duration(seconds: 35));
+      failure = result.fold<String?>((f) => f.message, (_) => null);
+    } on TimeoutException {
+      failure =
+          'La impresora tardó demasiado. Reiniciá el Bluetooth e intentá de nuevo.';
+    } catch (e) {
+      failure = 'Error al imprimir: $e';
+    } finally {
+      state = state.copyWith(isPrinting: false, errorMessage: failure);
+    }
   }
 
   /// Verifica si hay una impresora configurada. Con el modelo connect-to-print
