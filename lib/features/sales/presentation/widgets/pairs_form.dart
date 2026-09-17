@@ -9,6 +9,7 @@ class PairsForm extends StatefulWidget {
   const PairsForm({
     required this.digits,
     required this.onSubmit,
+    this.showExactToggle = false,
     super.key,
   });
 
@@ -16,7 +17,11 @@ class PairsForm extends StatefulWidget {
   final int digits;
 
   /// Llamado al confirmar; el parent cierra el sheet y agrega al carrito.
-  final void Function(int amount) onSubmit;
+  /// [isExact] solo es relevante cuando [showExactToggle] es true.
+  final void Function(int amount, bool isExact) onSubmit;
+
+  /// Muestra el selector Exacto / Fácil (solo aplica para THREE_DIGIT).
+  final bool showExactToggle;
 
   @override
   State<PairsForm> createState() => _PairsFormState();
@@ -26,6 +31,7 @@ class _PairsFormState extends State<PairsForm> {
   final _amountCtrl = TextEditingController();
   final _amountFocus = FocusNode();
   String? _errorMessage;
+  bool _isExact = false;
 
   @override
   void dispose() {
@@ -42,7 +48,7 @@ class _PairsFormState extends State<PairsForm> {
       return;
     }
     setState(() => _errorMessage = null);
-    widget.onSubmit(amount);
+    widget.onSubmit(amount, _isExact);
   }
 
   @override
@@ -75,7 +81,21 @@ class _PairsFormState extends State<PairsForm> {
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          if (widget.showExactToggle) ...[
+            const SizedBox(height: 10),
+            SegmentedButton<bool>(
+              segments: const [
+                ButtonSegment(value: false, label: Text('Fácil')),
+                ButtonSegment(value: true, label: Text('Exacto')),
+              ],
+              selected: {_isExact},
+              onSelectionChanged: (s) => setState(() => _isExact = s.first),
+              style: const ButtonStyle(
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+          ],
+          const SizedBox(height: 10),
           Wrap(
             spacing: 6,
             runSpacing: 4,

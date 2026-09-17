@@ -69,12 +69,12 @@ class Gana3CartController extends Notifier<Gana3CartState> {
     );
   }
 
-  void addPairs({required int amount}) {
+  void addPairs({required int amount, bool isExact = false}) {
     if (amount < 1 || amount > 999) return;
     // 000, 111, 222, ..., 999  (mismo dígito repetido tres veces)
     const pairs = [0, 111, 222, 333, 444, 555, 666, 777, 888, 999];
     final incoming = pairs
-        .map((n) => Gana3Bet(number: n, amount: amount, isExact: false))
+        .map((n) => Gana3Bet(number: n, amount: amount, isExact: isExact))
         .toList();
     state = Gana3CartState(
       bets: _merge(state.bets, incoming),
