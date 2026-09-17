@@ -367,7 +367,7 @@ class _RegularGameView extends ConsumerWidget {
       showDragHandle: true,
       builder: (ctx) => PairsForm(
         digits: 2,
-        onSubmit: (amount, _) {
+        onSubmit: (amount) {
           controller.addPairs(amount: amount);
           Navigator.of(ctx).pop();
         },
@@ -1182,7 +1182,7 @@ class _ComboGameView extends ConsumerWidget {
               showDragHandle: true,
               builder: (ctx) => PairsForm(
                 digits: 4,
-                onSubmit: (amount, _) {
+                onSubmit: (amount) {
                   controller.addPairs(amount: amount);
                   Navigator.of(ctx).pop();
                 },
@@ -1306,9 +1306,8 @@ class _Gana3GameView extends ConsumerWidget {
               showDragHandle: true,
               builder: (ctx) => PairsForm(
                 digits: 3,
-                showExactToggle: true,
-                onSubmit: (amount, isExact) {
-                  controller.addPairs(amount: amount, isExact: isExact);
+                onSubmit: (amount) {
+                  controller.addPairs(amount: amount);
                   Navigator.of(ctx).pop();
                 },
               ),
