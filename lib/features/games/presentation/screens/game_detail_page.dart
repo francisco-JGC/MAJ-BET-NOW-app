@@ -1715,6 +1715,36 @@ Future<void> _persistAndPrintInner(
     }
   }
 
+  // Validate per-ticket maximum: each line must not exceed maxPerTicket.
+  // Fails silently on network error — backend still enforces.
+  final resolvedDrawAt = drawAt ?? lock.nextDrawAt;
+  if (resolvedDrawAt != null) {
+    final availResult = await getIt<SaleLimitsRepository>().getAvailability(
+      SaleLimitAvailabilityQuery(
+        gameId: game.id,
+        salePointId: salePoint.id,
+        drawAt: resolvedDrawAt,
+      ),
+    );
+    final maxPerTicket =
+        availResult.fold((_) => null, (a) => a.maxPerTicket);
+    if (maxPerTicket != null) {
+      for (final line in requestLines) {
+        if (line.amount > maxPerTicket) {
+          final needed = (line.amount / maxPerTicket).ceil();
+          messenger.showSnackBar(SnackBar(
+            content: Text(
+              'Máximo C\$$maxPerTicket por boleto para el número "${line.label}". '
+              'Divide en $needed boletos de C\$$maxPerTicket.',
+            ),
+            duration: const Duration(seconds: 5),
+          ));
+          return;
+        }
+      }
+    }
+  }
+
   // UUID de idempotencia — combina:
   //   (a) Auto-retry del AuthInterceptor tras 401: el request queda con
   //       el mismo UUID → backend dedupea.

@@ -6,10 +6,16 @@ import 'package:equatable/equatable.dart';
 class SaleLimitAvailability extends Equatable {
   const SaleLimitAvailability({
     required this.limit,
+    required this.maxPerTicket,
     required this.usage,
   });
 
   final int? limit;
+
+  /// Maximum bet allowed on a single ticket line for any number.
+  /// null means no per-ticket cap is configured.
+  final int? maxPerTicket;
+
   final Map<String, int> usage;
 
   /// Amount still available for [label]. When no limit is set, returns null
@@ -32,5 +38,5 @@ class SaleLimitAvailability extends Equatable {
   bool get hasLimit => limit != null;
 
   @override
-  List<Object?> get props => [limit, usage];
+  List<Object?> get props => [limit, maxPerTicket, usage];
 }
