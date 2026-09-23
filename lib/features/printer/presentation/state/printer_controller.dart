@@ -133,7 +133,7 @@ class PrinterController extends Notifier<PrinterState> {
     String? failure;
     try {
       final result =
-          await _repository.printTest(address).timeout(const Duration(seconds: 25));
+          await _repository.printTest(address).timeout(const Duration(seconds: 35));
       failure = result.fold<String?>((f) => f.message, (_) => null);
     } on TimeoutException {
       failure = 'La impresora tardó demasiado. Reiniciá el Bluetooth e intentá de nuevo.';
@@ -151,8 +151,8 @@ class PrinterController extends Notifier<PrinterState> {
       return;
     }
     state = state.copyWith(isPrinting: true, clearError: true);
-    // Timeout total: connect (8 s) + writeBytes (8 s) + post-write delay
-    // (máx 6 s) + disconnect (2 s) + margen = 25 s. Cubre el caso donde el
+    // Timeout total: connect (10 s) + buildBytes + writeBytes (15 s) +
+    // post-write delay (máx 6 s) + margen = 35 s. Cubre el caso donde el
     // thread nativo BT queda bloqueado por un write anterior y el siguiente
     // connect() nunca recibe respuesta — sin esto isPrinting se queda en
     // true para siempre y el botón queda inutilizable hasta reiniciar la app.
@@ -160,7 +160,7 @@ class PrinterController extends Notifier<PrinterState> {
     try {
       final result = await _repository
           .printTicket(device.address, payload, isSmartPos: device.isSmartPos)
-          .timeout(const Duration(seconds: 25));
+          .timeout(const Duration(seconds: 35));
       failure = result.fold<String?>((f) => f.message, (_) => null);
     } on TimeoutException {
       failure =
