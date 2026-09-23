@@ -1912,7 +1912,7 @@ class _TotalBar extends ConsumerWidget {
   final int total;
   final int numberCount;
   final bool isPrinting;
-  final VoidCallback onPrint;
+  final VoidCallback? onPrint;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
