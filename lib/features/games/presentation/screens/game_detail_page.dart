@@ -307,13 +307,14 @@ class _RegularGameView extends ConsumerWidget {
                     ),
                   ),
           ),
-          if (cart.isNotEmpty)
-            _TotalBar(
-              total: cart.total,
-              numberCount: cart.count,
-              isPrinting: printerState.isPrinting || submitting,
-              onPrint: () => _printRegular(context, ref, game, cart),
-            ),
+          _TotalBar(
+            total: cart.total,
+            numberCount: cart.count,
+            isPrinting: printerState.isPrinting || submitting,
+            onPrint: cart.isEmpty
+                ? null
+                : () => _printRegular(context, ref, game, cart),
+          ),
         ],
       ),
     );
@@ -467,13 +468,14 @@ class _DateGameView extends ConsumerWidget {
                     ),
                   ),
           ),
-          if (cart.isNotEmpty)
-            _TotalBar(
-              total: cart.total,
-              numberCount: cart.count,
-              isPrinting: printerState.isPrinting || submitting,
-              onPrint: () => _printDates(context, ref, game, cart),
-            ),
+          _TotalBar(
+            total: cart.total,
+            numberCount: cart.count,
+            isPrinting: printerState.isPrinting || submitting,
+            onPrint: cart.isEmpty
+                ? null
+                : () => _printDates(context, ref, game, cart),
+          ),
         ],
       ),
     );
@@ -1227,13 +1229,14 @@ class _ComboGameView extends ConsumerWidget {
                     ),
                   ),
           ),
-          if (cart.isNotEmpty)
-            _TotalBar(
-              total: cart.total,
-              numberCount: cart.count,
-              isPrinting: printerState.isPrinting || submitting,
-              onPrint: () => _printCombo(context, ref, game, cart),
-            ),
+          _TotalBar(
+            total: cart.total,
+            numberCount: cart.count,
+            isPrinting: printerState.isPrinting || submitting,
+            onPrint: cart.isEmpty
+                ? null
+                : () => _printCombo(context, ref, game, cart),
+          ),
         ],
       ),
     );
@@ -1351,13 +1354,14 @@ class _Gana3GameView extends ConsumerWidget {
                     ),
                   ),
           ),
-          if (cart.isNotEmpty)
-            _TotalBar(
-              total: cart.total,
-              numberCount: cart.count,
-              isPrinting: printerState.isPrinting || submitting,
-              onPrint: () => _printGana3(context, ref, game, cart),
-            ),
+          _TotalBar(
+            total: cart.total,
+            numberCount: cart.count,
+            isPrinting: printerState.isPrinting || submitting,
+            onPrint: cart.isEmpty
+                ? null
+                : () => _printGana3(context, ref, game, cart),
+          ),
         ],
       ),
     );
@@ -1944,19 +1948,28 @@ class _TotalBar extends ConsumerWidget {
                 ],
               ),
             ),
-            FilledButton.icon(
-              icon: isPrinting
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Icon(_iconFor(method)),
-              label: Text(method.actionLabel),
-              onPressed: isPrinting ? null : onPrint,
+            GestureDetector(
+              // Long-press de emergencia: desatasca el botón si isPrinting
+              // quedó bloqueado por un fallo nativo que no llegó al finally.
+              onLongPress: isPrinting
+                  ? () => ref
+                      .read(printerControllerProvider.notifier)
+                      .resetPrintingState()
+                  : null,
+              child: FilledButton.icon(
+                icon: isPrinting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Icon(_iconFor(method)),
+                label: Text(method.actionLabel),
+                onPressed: isPrinting ? null : onPrint,
+              ),
             ),
           ],
         ),

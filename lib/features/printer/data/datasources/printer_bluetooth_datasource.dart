@@ -41,8 +41,8 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
   // devices Android, y el `_isReconnecting` guard del controller impide
   // que el timer intente de nuevo. Con timeout, forzamos el fallo rápido
   // y liberamos el ciclo de reconexión.
-  static const _kConnectTimeout = Duration(seconds: 10);
-  static const _kDisconnectTimeout = Duration(seconds: 3);
+  static const _kConnectTimeout = Duration(seconds: 8);
+  static const _kDisconnectTimeout = Duration(seconds: 2);
 
   @override
   Future<void> connect(String address) async {
@@ -104,7 +104,7 @@ class PrinterBluetoothDatasourceImpl implements PrinterBluetoothDatasource {
     }
   }
 
-  static const _kWriteTimeout = Duration(seconds: 15);
+  static const _kWriteTimeout = Duration(seconds: 8);
 
   Future<void> _write(List<int> bytes) async {
     final ok = await PrintBluetoothThermal.writeBytes(bytes)
