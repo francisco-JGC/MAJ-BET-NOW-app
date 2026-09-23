@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -92,6 +94,10 @@ final ticketSubmittingProvider =
 /// del ciclo de Flutter/Riverpod, solo del event loop de Dart, así que
 /// dos taps back-to-back en el mismo micro-turno también quedan cubiertos.
 bool _submissionInFlight = false;
+
+/// Desatasca el guard de reentrada desde el botón Cancelar del UI.
+/// Seguro llamarlo aunque no haya una operación en vuelo.
+void _cancelSubmission() => _submissionInFlight = false;
 
 /// UUID v4 generator compartido — barato de instanciar pero reutilizamos
 /// para no crear un `Random` nuevo por venta.
@@ -314,6 +320,10 @@ class _RegularGameView extends ConsumerWidget {
             onPrint: cart.isEmpty
                 ? null
                 : () => _printRegular(context, ref, game, cart),
+            onCancel: () {
+              ref.read(cartControllerProvider(game.id).notifier).clear();
+              ref.read(formResetProvider(game.id).notifier).bump();
+            },
           ),
         ],
       ),
@@ -475,6 +485,10 @@ class _DateGameView extends ConsumerWidget {
             onPrint: cart.isEmpty
                 ? null
                 : () => _printDates(context, ref, game, cart),
+            onCancel: () {
+              ref.read(dateCartControllerProvider(game.id).notifier).clear();
+              ref.read(formResetProvider(game.id).notifier).bump();
+            },
           ),
         ],
       ),
@@ -1236,6 +1250,10 @@ class _ComboGameView extends ConsumerWidget {
             onPrint: cart.isEmpty
                 ? null
                 : () => _printCombo(context, ref, game, cart),
+            onCancel: () {
+              ref.read(comboCartControllerProvider((game.id, game.exactMultiplier ?? kComboMultiplier)).notifier).clear();
+              ref.read(formResetProvider(game.id).notifier).bump();
+            },
           ),
         ],
       ),
@@ -1361,6 +1379,10 @@ class _Gana3GameView extends ConsumerWidget {
             onPrint: cart.isEmpty
                 ? null
                 : () => _printGana3(context, ref, game, cart),
+            onCancel: () {
+              ref.read(gana3CartControllerProvider(game.id).notifier).clear();
+              ref.read(formResetProvider(game.id).notifier).bump();
+            },
           ),
         ],
       ),
@@ -1827,9 +1849,14 @@ Future<void> _persistAndPrintInner(
         await ref.read(printerControllerProvider.notifier).printTicket(payload);
         final after = ref.read(printerControllerProvider);
         if (after.errorMessage != null) {
+          _pendingRequestIdByFingerprint.remove(fingerprint);
+          onSuccess();
           messenger.showSnackBar(SnackBar(
-            content: Text('Ticket #${receipt.folio} registrado, pero falló la '
-                'impresión: ${after.errorMessage}'),
+            content: Text(
+              'Boleto #${receipt.folio} registrado. '
+              'La impresión falló — el carrito fue vaciado.',
+            ),
+            duration: const Duration(seconds: 6),
           ));
           return;
         }
@@ -1901,21 +1928,72 @@ class _EmptyView extends StatelessWidget {
   }
 }
 
-class _TotalBar extends ConsumerWidget {
+class _TotalBar extends ConsumerStatefulWidget {
   const _TotalBar({
     required this.total,
     required this.numberCount,
     required this.isPrinting,
     required this.onPrint,
+    this.onCancel,
   });
 
   final int total;
   final int numberCount;
   final bool isPrinting;
   final VoidCallback? onPrint;
+  final VoidCallback? onCancel;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_TotalBar> createState() => _TotalBarState();
+}
+
+class _TotalBarState extends ConsumerState<_TotalBar> {
+  Timer? _cancelTimer;
+  bool _showCancel = false;
+
+  @override
+  void didUpdateWidget(_TotalBar old) {
+    super.didUpdateWidget(old);
+    if (widget.isPrinting && !old.isPrinting) {
+      // Empezó a imprimir — esperar 6 s antes de mostrar Cancelar.
+      _showCancel = false;
+      _cancelTimer?.cancel();
+      _cancelTimer = Timer(const Duration(seconds: 6), () {
+        if (mounted) setState(() => _showCancel = true);
+      });
+    } else if (!widget.isPrinting) {
+      // Terminó (éxito o error) — ocultar Cancelar.
+      _cancelTimer?.cancel();
+      _cancelTimer = null;
+      if (_showCancel) setState(() => _showCancel = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _cancelTimer?.cancel();
+    super.dispose();
+  }
+
+  void _onCancel(BuildContext context) {
+    _cancelTimer?.cancel();
+    setState(() => _showCancel = false);
+    _cancelSubmission();
+    ref.read(ticketSubmittingProvider.notifier).setValue(false);
+    ref.read(printerControllerProvider.notifier).resetPrintingState();
+    widget.onCancel?.call();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Boleto registrado. La impresión falló — el carrito fue vaciado.',
+        ),
+        duration: Duration(seconds: 6),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final method = ref.watch(settingsControllerProvider).value ??
         BillingMethod.bluetoothPrinter;
     return SafeArea(
@@ -1935,41 +2013,40 @@ class _TotalBar extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    kCurrencyFormat.format(total),
+                    kCurrencyFormat.format(widget.total),
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   Text(
-                    '$numberCount número${numberCount == 1 ? '' : 's'}',
+                    '${widget.numberCount} número${widget.numberCount == 1 ? '' : 's'}',
                     style: const TextStyle(color: Colors.black54),
                   ),
                 ],
               ),
             ),
-            GestureDetector(
-              // Long-press de emergencia: desatasca el botón si isPrinting
-              // quedó bloqueado por un fallo nativo que no llegó al finally.
-              onLongPress: isPrinting
-                  ? () => ref
-                      .read(printerControllerProvider.notifier)
-                      .resetPrintingState()
-                  : null,
-              child: FilledButton.icon(
-                icon: isPrinting
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Icon(_iconFor(method)),
-                label: Text(method.actionLabel),
-                onPressed: isPrinting ? null : onPrint,
+            // Botón Cancelar: aparece 6 s después de que empieza el loading.
+            if (widget.isPrinting && _showCancel) ...[
+              TextButton(
+                onPressed: () => _onCancel(context),
+                child: const Text('Cancelar'),
               ),
+              const SizedBox(width: 8),
+            ],
+            FilledButton.icon(
+              icon: widget.isPrinting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Icon(_iconFor(method)),
+              label: Text(method.actionLabel),
+              onPressed: widget.isPrinting ? null : widget.onPrint,
             ),
           ],
         ),
