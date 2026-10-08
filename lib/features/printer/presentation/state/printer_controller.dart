@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../../core/di/injection.dart';
+import '../../data/datasources/printer_constants.dart';
 import '../../domain/entities/printer_device.dart';
 import '../../domain/entities/ticket_payload.dart';
 import '../../domain/repositories/printer_repository.dart';
@@ -133,10 +134,11 @@ class PrinterController extends Notifier<PrinterState> {
     String? failure;
     try {
       final result =
-          await _repository.printTest(address).timeout(const Duration(seconds: 35));
+          await _repository.printTest(address).timeout(kPrintOperationTimeout);
       failure = result.fold<String?>((f) => f.message, (_) => null);
     } on TimeoutException {
-      failure = 'La impresora tardó demasiado. Reiniciá el Bluetooth e intentá de nuevo.';
+      failure =
+          'La impresora tardó demasiado. Reiniciá el Bluetooth e intentá de nuevo.';
     } catch (e) {
       failure = 'Error al imprimir: $e';
     } finally {
@@ -151,16 +153,15 @@ class PrinterController extends Notifier<PrinterState> {
       return;
     }
     state = state.copyWith(isPrinting: true, clearError: true);
-    // Timeout total: connect (10 s) + buildBytes + writeBytes (15 s) +
-    // post-write delay (máx 6 s) + margen = 35 s. Cubre el caso donde el
-    // thread nativo BT queda bloqueado por un write anterior y el siguiente
-    // connect() nunca recibe respuesta — sin esto isPrinting se queda en
-    // true para siempre y el botón queda inutilizable hasta reiniciar la app.
+    // El `finally` es lo que garantiza que el botón vuelva a habilitarse.
+    // Sin él, cualquier excepción que no sea TimeoutException deja
+    // isPrinting en true para siempre y el botón queda inutilizable hasta
+    // reiniciar la app.
     String? failure;
     try {
       final result = await _repository
           .printTicket(device.address, payload, isSmartPos: device.isSmartPos)
-          .timeout(const Duration(seconds: 35));
+          .timeout(kPrintOperationTimeout);
       failure = result.fold<String?>((f) => f.message, (_) => null);
     } on TimeoutException {
       failure =
