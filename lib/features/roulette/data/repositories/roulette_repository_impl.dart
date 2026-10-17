@@ -27,12 +27,14 @@ class RouletteRepositoryImpl implements RouletteRepository {
     required String salePointId,
     required List<String> numbers,
     required int amountPerNumber,
+    required bool isTest,
   }) async {
     try {
       return Right(await remote.play(
         salePointId: salePointId,
         numbers: numbers,
         amountPerNumber: amountPerNumber,
+        isTest: isTest,
       ));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

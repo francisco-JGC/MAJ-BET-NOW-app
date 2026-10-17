@@ -17,6 +17,10 @@ import '../widgets/roulette_wheel.dart';
 /// desde que el backend responde, y lo único que queda es el suspenso.
 const _spinDuration = Duration(milliseconds: 5200);
 
+/// Fondo de la mesa. Violeta casi negro, para que el dorado del marco
+/// y de la rueda tengan contra qué brillar.
+const _kFelt = Color(0xFF14031F);
+
 class RoulettePage extends ConsumerStatefulWidget {
   const RoulettePage({super.key});
 
@@ -32,8 +36,18 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
   late final AnimationController _spin;
   late final AnimationController _confetti;
 
+  /// La curva se crea UNA vez. Creada dentro de `build` quedaba una
+  /// instancia nueva por rebuild, todas suscritas a `_spin` y ninguna
+  /// liberada — Flutter exige disponerlas explícitamente.
+  late final CurvedAnimation _spinCurve;
+
   /// Índice donde frena la rueda. Se fija al recibir la respuesta.
   int _targetIndex = 0;
+
+  /// Última casilla que pasó bajo el puntero, para no repetir el tic.
+  int _lastTickedPocket = -1;
+
+  final _scroll = ScrollController();
 
   @override
   void initState() {
@@ -48,20 +62,55 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
       vsync: this,
       duration: const Duration(milliseconds: 2600),
     );
+    // Arranca fuerte y desacelera largo sobre el final, que es donde se
+    // genera la tensión.
+    _spinCurve = CurvedAnimation(parent: _spin, curve: Curves.easeOutQuart);
+    _spinCurve.addListener(_tickHaptics);
   }
+
+  /// Vibración por casilla: un tic liviano cada vez que una casilla nueva
+  /// pasa bajo el puntero. Como la curva desacelera, los tics se van
+  /// espaciando solos y se siente cómo la rueda pierde fuerza.
+  void _tickHaptics() {
+    final pocket = (_spinCurve.value * _totalPocketsPassed).floor();
+    if (pocket == _lastTickedPocket) return;
+    _lastTickedPocket = pocket;
+    if (_spin.isAnimating) HapticFeedback.selectionClick();
+  }
+
+  /// Cuántas casillas pasan en todo el giro: 6 vueltas completas.
+  static const _totalPocketsPassed = 6 * kRoulettePocketCount;
 
   @override
   void dispose() {
+    _scroll.dispose();
     _spin.removeStatusListener(_onSpinStatus);
+    _spinCurve
+      ..removeListener(_tickHaptics)
+      ..dispose();
     _entrance.dispose();
     _spin.dispose();
     _confetti.dispose();
     super.dispose();
   }
 
+  /// Lleva la vista a la rueda. Se usa al girar y al volver a jugar: el
+  /// botón vive al fondo del scroll, así que sin esto la animación —que es
+  /// todo el juego— ocurría fuera de pantalla.
+  void _scrollToWheel() {
+    if (!_scroll.hasClients) return;
+    _scroll.animateTo(
+      0,
+      duration: const Duration(milliseconds: 450),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
   Future<void> _handlePlay() async {
     final salePoint = ref.read(activeSalePointProvider).selected;
     if (salePoint == null) return;
+
+    _scrollToWheel();
 
     final play = await ref
         .read(rouletteControllerProvider.notifier)
@@ -90,7 +139,10 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
     notifier.reveal();
 
     if (ref.read(rouletteControllerProvider).play?.isWin ?? false) {
+      HapticFeedback.heavyImpact();
       _confetti.forward(from: 0);
+    } else {
+      HapticFeedback.mediumImpact();
     }
   }
 
@@ -98,6 +150,9 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
     ref.read(rouletteControllerProvider.notifier).reset();
     _spin.reset();
     _confetti.reset();
+    _lastTickedPocket = -1;
+    setState(() => _targetIndex = 0);
+    _scrollToWheel();
   }
 
   @override
@@ -125,23 +180,102 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
         ? null
         : ref.watch(rouletteConfigProvider(salePoint.id)).value;
 
-    // Curva de giro: arranca fuerte y desacelera largo al final, que es
-    // donde se genera la tensión.
-    final spinCurve = CurvedAnimation(parent: _spin, curve: Curves.easeOutQuart);
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Ruleta')),
+      // La app corre en tema claro, pero esta pantalla se diseñó sobre
+      // oscuro: usa texto blanco y superficies `white12`, que sobre el
+      // surface claro del tema quedaban casi invisibles. El fondo propio
+      // no es decorativo, es lo que la hace legible.
+      backgroundColor: _kFelt,
+      extendBodyBehindAppBar: false,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.white,
+        title: const Text('Ruleta'),
+        actions: [
+          Row(
+            children: [
+              const Text('Prueba',
+                  style: TextStyle(fontSize: 12, color: Colors.white70)),
+              Switch(
+                value: state.isTestMode,
+                onChanged: state.phase == RoulettePhase.idle
+                    ? (v) => ref
+                        .read(rouletteControllerProvider.notifier)
+                        .setTestMode(v)
+                    : null,
+              ),
+            ],
+          ),
+        ],
+      ),
       body: Stack(
         children: [
+          // Degradé del paño: más claro arriba, donde está la rueda.
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(0, -0.55),
+                radius: 1.1,
+                colors: [Color(0xFF2E1065), _kFelt],
+              ),
+            ),
+            child: SizedBox.expand(),
+          ),
+          // Marco de fichas. Va DEBAJO del contenido y sin capturar toques:
+          // es decoración de borde, no un elemento interactivo.
+          const IgnorePointer(
+            child: Opacity(
+              opacity: 0.85,
+              child: Image(
+                image: AssetImage('assets/images/games/ruleta_marco.webp'),
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+              ),
+            ),
+          ),
           ListView(
+            controller: _scroll,
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
             children: [
+              // Franja permanente mientras dure el modo: que nadie cobre
+              // ni pague por una tirada de prueba creyendo que fue real.
+              if (state.isTestMode)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFF59E0B)),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.science_outlined,
+                          size: 18, color: Color(0xFFF59E0B)),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Modo prueba: esta tirada no cuenta como venta ni '
+                          'aparece en el historial.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFFDE68A),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               _Staggered(
                 controller: _entrance,
                 order: 0,
                 child: Center(
                   child: RouletteWheel(
-                    controller: spinCurve,
+                    controller: _spinCurve,
                     targetIndex: _targetIndex,
                     selected: state.selected,
                     size: MediaQuery.sizeOf(context).width * 0.78,
@@ -206,19 +340,23 @@ class _Staggered extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final start = (order * 0.12).clamp(0.0, 0.6);
-    final anim = CurvedAnimation(
-      parent: controller,
-      curve: Interval(start, (start + 0.5).clamp(0.0, 1.0), curve: Curves.easeOutCubic),
+    // Interval se evalúa sobre el valor del controller en vez de envolverlo
+    // en un CurvedAnimation: así no queda un objeto animado nuevo —y sin
+    // liberar— por cada rebuild.
+    final curve = Interval(
+      start,
+      (start + 0.5).clamp(0.0, 1.0),
+      curve: Curves.easeOutCubic,
     );
     return AnimatedBuilder(
-      animation: anim,
-      builder: (context, c) => Opacity(
-        opacity: anim.value,
-        child: Transform.translate(
-          offset: Offset(0, 26 * (1 - anim.value)),
-          child: c,
-        ),
-      ),
+      animation: controller,
+      builder: (context, c) {
+        final v = curve.transform(controller.value);
+        return Opacity(
+          opacity: v,
+          child: Transform.translate(offset: Offset(0, 26 * (1 - v)), child: c),
+        );
+      },
       child: child,
     );
   }
@@ -237,7 +375,7 @@ class _ResultBanner extends StatelessWidget {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 420),
       transitionBuilder: (child, anim) => ScaleTransition(
-        scale: CurvedAnimation(parent: anim, curve: Curves.easeOutBack),
+        scale: CurveTween(curve: Curves.easeOutBack).animate(anim),
         child: FadeTransition(opacity: anim, child: child),
       ),
       child: !revealed
@@ -336,11 +474,25 @@ class _BetBarState extends ConsumerState<_BetBar> {
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               style: const TextStyle(
-                  fontWeight: FontWeight.w900, fontSize: 18),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  color: Colors.white),
+              cursorColor: AppTheme.accent,
               decoration: const InputDecoration(
                 labelText: 'Monto',
+                labelStyle: TextStyle(color: Colors.white60, fontSize: 12),
                 prefixText: 'C\$',
+                prefixStyle: TextStyle(color: Colors.white70),
                 isDense: true,
+                enabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white24),
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: AppTheme.accent),
+                ),
+                disabledBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white12),
+                ),
               ),
               onChanged: (v) {
                 final parsed = int.tryParse(v);
@@ -455,6 +607,8 @@ class _ActionBar extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               minimumSize: const Size(52, 52),
               padding: EdgeInsets.zero,
+              foregroundColor: Colors.white70,
+              side: const BorderSide(color: Colors.white24),
             ),
             child: const Icon(Icons.close),
           ),
@@ -468,6 +622,9 @@ class _ActionBar extends StatelessWidget {
               backgroundColor: AppTheme.accent,
               foregroundColor: const Color(0xFF1F1300),
               disabledBackgroundColor: Colors.white12,
+              // Sin esto el estado deshabilitado tomaba el gris del tema
+              // claro y quedaba ilegible sobre el fondo oscuro.
+              disabledForegroundColor: Colors.white38,
             ),
             child: spinning
                 ? const SizedBox(

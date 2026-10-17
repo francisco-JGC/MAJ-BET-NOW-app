@@ -10,6 +10,8 @@ const List<String> kRoulettePockets = [
   '6', '21', '33', '16', '4', '23', '35', '14', '2',
 ];
 
+const int kRoulettePocketCount = 38;
+
 /// Números rojos de la ruleta. El resto son negros, salvo 0 y 00 (verdes).
 const Set<String> kRedPockets = {
   '1', '3', '5', '7', '9', '12', '14', '16', '18',
@@ -28,6 +30,7 @@ class RoulettePlay extends Equatable {
     required this.winningNumber,
     required this.isWin,
     required this.prize,
+    required this.isTest,
     required this.createdAt,
   });
 
@@ -38,11 +41,15 @@ class RoulettePlay extends Equatable {
   final String winningNumber;
   final bool isWin;
   final int prize;
+
+  /// Jugada de prueba: no cuenta como venta ni entra al historial.
+  final bool isTest;
+
   final DateTime createdAt;
 
   @override
   List<Object?> get props =>
-      [id, numbers, amountPerNumber, totalAmount, winningNumber, isWin, prize, createdAt];
+      [id, numbers, amountPerNumber, totalAmount, winningNumber, isWin, prize, isTest, createdAt];
 }
 
 class RouletteConfig extends Equatable {

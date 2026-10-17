@@ -9,6 +9,7 @@ class RoulettePlayModel extends RoulettePlay {
     required super.winningNumber,
     required super.isWin,
     required super.prize,
+    required super.isTest,
     required super.createdAt,
   });
 
@@ -21,6 +22,7 @@ class RoulettePlayModel extends RoulettePlay {
       winningNumber: '${json['winningNumber']}',
       isWin: json['isWin'] as bool,
       prize: (json['prize'] as num).toInt(),
+      isTest: json['isTest'] as bool? ?? false,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
   }

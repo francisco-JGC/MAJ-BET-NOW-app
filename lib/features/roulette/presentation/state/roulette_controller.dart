@@ -27,6 +27,7 @@ class RouletteState {
     this.phase = RoulettePhase.idle,
     this.play,
     this.error,
+    this.isTestMode = false,
   });
 
   final Set<String> selected;
@@ -34,6 +35,10 @@ class RouletteState {
   final RoulettePhase phase;
   final RoulettePlay? play;
   final String? error;
+
+  /// Modo prueba: la jugada se registra marcada y no cuenta como venta
+  /// ni aparece en el historial operativo.
+  final bool isTestMode;
 
   int get totalAmount => amountPerNumber * selected.length;
   bool get canPlay => selected.isNotEmpty && phase == RoulettePhase.idle;
@@ -46,6 +51,7 @@ class RouletteState {
     bool clearPlay = false,
     String? error,
     bool clearError = false,
+    bool? isTestMode,
   }) {
     return RouletteState(
       selected: selected ?? this.selected,
@@ -53,6 +59,7 @@ class RouletteState {
       phase: phase ?? this.phase,
       play: clearPlay ? null : play ?? this.play,
       error: clearError ? null : error ?? this.error,
+      isTestMode: isTestMode ?? this.isTestMode,
     );
   }
 }
@@ -89,6 +96,11 @@ class RouletteController extends Notifier<RouletteState> {
     state = state.copyWith(selected: const {}, clearError: true);
   }
 
+  void setTestMode(bool value) {
+    if (state.phase != RoulettePhase.idle) return;
+    state = state.copyWith(isTestMode: value);
+  }
+
   void setAmount(int amount) {
     if (state.phase != RoulettePhase.idle || amount < 1) return;
     state = state.copyWith(amountPerNumber: amount);
@@ -104,6 +116,7 @@ class RouletteController extends Notifier<RouletteState> {
       salePointId: salePointId,
       numbers: state.selected.toList(),
       amountPerNumber: state.amountPerNumber,
+      isTest: state.isTestMode,
     );
 
     return result.fold(
@@ -124,7 +137,11 @@ class RouletteController extends Notifier<RouletteState> {
   /// La llama la pantalla cuando la rueda terminó de girar.
   void reveal() => state = state.copyWith(phase: RoulettePhase.revealed);
 
-  void reset() => state = const RouletteState();
+  /// Conserva el modo prueba a propósito: salir de prueba debe ser una
+  /// decisión explícita, no algo que pase solo al jugar de nuevo.
+  void reset() {
+    state = RouletteState(isTestMode: state.isTestMode);
+  }
 }
 
 final rouletteControllerProvider =
