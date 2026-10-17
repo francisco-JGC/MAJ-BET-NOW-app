@@ -189,9 +189,15 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
 
     final state = ref.watch(rouletteControllerProvider);
     final salePoint = ref.watch(activeSalePointProvider).selected;
-    final config = salePoint == null
+    final configAsync = salePoint == null
         ? null
-        : ref.watch(rouletteConfigProvider(salePoint.id)).value;
+        : ref.watch(rouletteConfigProvider(salePoint.id));
+    final config = configAsync?.value;
+
+    // Si la configuración no carga, hay que DECIRLO. Antes esto era un
+    // `?? false` silencioso: ante un backend caído o sin desplegar, el
+    // switch simplemente no aparecía y no había forma de saber por qué.
+    final configFailed = configAsync?.hasError ?? false;
 
     // El admin habilita el modo prueba desde la web; el vendedor decide
     // tirada por tirada. Si el permiso se revoca con el switch tildado,
@@ -279,6 +285,36 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
             controller: _scroll,
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
             children: [
+              if (configFailed)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDC2626).withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(10),
+                    border: const Border.fromBorderSide(
+                      BorderSide(color: Color(0xFFDC2626)),
+                    ),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.cloud_off, size: 18, color: Color(0xFFFCA5A5)),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'No se pudo cargar la configuración de la ruleta. '
+                          'Las tiradas se registran como reales.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFFFCA5A5),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               // Franja permanente mientras dure el modo: que nadie cobre
               // ni pague por una tirada de prueba creyendo que fue real.
               if (state.isTestMode)
