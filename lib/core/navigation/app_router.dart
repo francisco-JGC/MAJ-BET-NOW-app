@@ -18,6 +18,7 @@ import '../../features/printer/presentation/screens/printer_setup_page.dart';
 import '../../features/results/presentation/screens/latest_results_page.dart';
 import '../../features/results/presentation/screens/verify_ticket_page.dart';
 import '../../features/results/presentation/screens/winners_page.dart';
+import '../../features/roulette/presentation/screens/roulette_page.dart';
 import '../../features/sale_points/presentation/screens/select_sale_point_page.dart';
 import '../../features/sale_points/presentation/state/active_sale_point_controller.dart';
 import '../../features/sale_points/presentation/state/active_sale_point_state.dart';
@@ -117,6 +118,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ShellRoute(
         builder: (context, state, child) => AppShell(child: child),
         routes: [
+          GoRoute(
+            path: '/ruleta',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: RoulettePage(),
+            ),
+          ),
           GoRoute(
             path: '/juegos',
             pageBuilder: (context, state) => const NoTransitionPage(

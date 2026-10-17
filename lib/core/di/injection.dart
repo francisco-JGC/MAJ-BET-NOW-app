@@ -41,6 +41,9 @@ import '../../features/printer/domain/usecases/print_ticket.dart';
 import '../../features/results/data/datasources/results_remote_datasource.dart';
 import '../../features/results/data/repositories/results_repository_impl.dart';
 import '../../features/results/domain/repositories/results_repository.dart';
+import '../../features/roulette/data/datasources/roulette_remote_datasource.dart';
+import '../../features/roulette/data/repositories/roulette_repository_impl.dart';
+import '../../features/roulette/domain/repositories/roulette_repository.dart';
 import '../../features/sale_limits/data/datasources/sale_limits_remote_datasource.dart';
 import '../../features/sale_limits/data/repositories/sale_limits_repository_impl.dart';
 import '../../features/sale_limits/domain/repositories/sale_limits_repository.dart';
@@ -119,6 +122,7 @@ Future<void> configureDependencies() async {
   _registerMovementsFeature();
   _registerResultsFeature();
   _registerSaleLimitsFeature();
+  _registerRouletteFeature();
   _registerGamePrizesFeature();
   _registerLuckyFeature();
   _registerSettingsFeature();
@@ -305,5 +309,15 @@ void _registerPrinterFeature() {
     )
     ..registerFactory<PrintTicket>(
       () => PrintTicket(repository: getIt()),
+    );
+}
+
+void _registerRouletteFeature() {
+  getIt
+    ..registerLazySingleton<RouletteRemoteDatasource>(
+      () => RouletteRemoteDatasourceImpl(client: getIt()),
+    )
+    ..registerLazySingleton<RouletteRepository>(
+      () => RouletteRepositoryImpl(remote: getIt()),
     );
 }

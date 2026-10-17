@@ -1,0 +1,59 @@
+import 'package:equatable/equatable.dart';
+
+/// Las 38 casillas de una ruleta americana, en el orden físico real de la
+/// rueda — no el orden numérico. Importa para la animación: si se pintaran
+/// 0,1,2,3... en círculo, la rueda se vería ordenada y falsa.
+const List<String> kRoulettePockets = [
+  '0', '28', '9', '26', '30', '11', '7', '20', '32', '17',
+  '5', '22', '34', '15', '3', '24', '36', '13', '1',
+  '00', '27', '10', '25', '29', '12', '8', '19', '31', '18',
+  '6', '21', '33', '16', '4', '23', '35', '14', '2',
+];
+
+/// Números rojos de la ruleta. El resto son negros, salvo 0 y 00 (verdes).
+const Set<String> kRedPockets = {
+  '1', '3', '5', '7', '9', '12', '14', '16', '18',
+  '19', '21', '23', '25', '27', '30', '32', '34', '36',
+};
+
+bool isGreenPocket(String n) => n == '0' || n == '00';
+bool isRedPocket(String n) => kRedPockets.contains(n);
+
+class RoulettePlay extends Equatable {
+  const RoulettePlay({
+    required this.id,
+    required this.numbers,
+    required this.amountPerNumber,
+    required this.totalAmount,
+    required this.winningNumber,
+    required this.isWin,
+    required this.prize,
+    required this.createdAt,
+  });
+
+  final String id;
+  final List<String> numbers;
+  final int amountPerNumber;
+  final int totalAmount;
+  final String winningNumber;
+  final bool isWin;
+  final int prize;
+  final DateTime createdAt;
+
+  @override
+  List<Object?> get props =>
+      [id, numbers, amountPerNumber, totalAmount, winningNumber, isWin, prize, createdAt];
+}
+
+class RouletteConfig extends Equatable {
+  const RouletteConfig({
+    required this.winPercentBps,
+    required this.prizeMultiplier,
+  });
+
+  final int winPercentBps;
+  final int prizeMultiplier;
+
+  @override
+  List<Object?> get props => [winPercentBps, prizeMultiplier];
+}
