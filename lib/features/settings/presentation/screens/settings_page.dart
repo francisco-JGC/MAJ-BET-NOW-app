@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../roulette/presentation/state/haptics_provider.dart';
 import '../../domain/entities/billing_method.dart';
 import '../state/settings_controller.dart';
 
@@ -35,6 +36,19 @@ class SettingsPage extends ConsumerWidget {
                   subtitle: Text(m.description),
                   value: m,
                 ),
+              const Divider(),
+              const _SectionHeader(title: 'Ruleta'),
+              SwitchListTile(
+                secondary: const Icon(Icons.vibration),
+                title: const Text('Vibración al girar'),
+                subtitle: const Text(
+                  'Un pulso por casilla mientras gira la rueda',
+                ),
+                value: ref.watch(rouletteHapticsProvider),
+                onChanged: (v) => ref
+                    .read(rouletteHapticsProvider.notifier)
+                    .toggle(enabled: v),
+              ),
               const Divider(),
               const _SectionHeader(title: 'Impresora'),
               ListTile(

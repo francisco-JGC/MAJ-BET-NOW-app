@@ -8,8 +8,10 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency.dart';
 import '../../../sale_points/presentation/state/active_sale_point_controller.dart';
 import '../../domain/entities/roulette_play.dart';
+import '../state/haptics_provider.dart';
 import '../state/roulette_controller.dart';
 import '../widgets/confetti_overlay.dart';
+import '../widgets/lose_flash.dart';
 import '../widgets/number_board.dart';
 import '../widgets/roulette_wheel.dart';
 
@@ -35,6 +37,7 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
   late final AnimationController _entrance;
   late final AnimationController _spin;
   late final AnimationController _confetti;
+  late final AnimationController _lose;
 
   /// La curva se crea UNA vez. Creada dentro de `build` quedaba una
   /// instancia nueva por rebuild, todas suscritas a `_spin` y ninguna
@@ -64,6 +67,10 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
     );
     // Arranca fuerte y desacelera largo sobre el final, que es donde se
     // genera la tensión.
+    _lose = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1100),
+    );
     _spinCurve = CurvedAnimation(parent: _spin, curve: Curves.easeOutQuart);
     _spinCurve.addListener(_tickHaptics);
   }
@@ -75,7 +82,9 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
     final pocket = (_spinCurve.value * _totalPocketsPassed).floor();
     if (pocket == _lastTickedPocket) return;
     _lastTickedPocket = pocket;
-    if (_spin.isAnimating) HapticFeedback.selectionClick();
+    if (!_spin.isAnimating) return;
+    if (!ref.read(rouletteHapticsProvider)) return;
+    HapticFeedback.selectionClick();
   }
 
   /// Cuántas casillas pasan en todo el giro: 6 vueltas completas.
@@ -91,6 +100,7 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
     _entrance.dispose();
     _spin.dispose();
     _confetti.dispose();
+    _lose.dispose();
     super.dispose();
   }
 
@@ -138,11 +148,13 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
     final notifier = ref.read(rouletteControllerProvider.notifier);
     notifier.reveal();
 
+    final hapticsOn = ref.read(rouletteHapticsProvider);
     if (ref.read(rouletteControllerProvider).play?.isWin ?? false) {
-      HapticFeedback.heavyImpact();
+      if (hapticsOn) HapticFeedback.heavyImpact();
       _confetti.forward(from: 0);
     } else {
-      HapticFeedback.mediumImpact();
+      if (hapticsOn) HapticFeedback.mediumImpact();
+      _lose.forward(from: 0);
     }
   }
 
@@ -150,6 +162,7 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
     ref.read(rouletteControllerProvider.notifier).reset();
     _spin.reset();
     _confetti.reset();
+    _lose.reset();
     _lastTickedPocket = -1;
     setState(() => _targetIndex = 0);
     _scrollToWheel();
@@ -283,7 +296,10 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
                 ),
               ),
               const SizedBox(height: 18),
-              _ResultBanner(state: state),
+              ShakeTransition(
+                controller: _lose,
+                child: _ResultBanner(state: state),
+              ),
               const SizedBox(height: 10),
               _Staggered(
                 controller: _entrance,
@@ -318,6 +334,7 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
             ],
           ),
           ConfettiOverlay(controller: _confetti),
+          LoseFlash(controller: _lose),
         ],
       ),
     );
@@ -387,22 +404,45 @@ class _ResultBanner extends StatelessWidget {
               decoration: BoxDecoration(
                 color: play.isWin
                     ? AppTheme.accent.withValues(alpha: 0.18)
-                    : Colors.white10,
+                    : const Color(0xFFDC2626).withValues(alpha: 0.16),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: play.isWin ? AppTheme.accent : Colors.white24,
-                  width: play.isWin ? 2 : 1,
+                  color: play.isWin
+                      ? AppTheme.accent
+                      : const Color(0xFFDC2626),
+                  width: 2,
                 ),
               ),
-              child: Text(
-                play.isWin
-                    ? '¡Ganaste ${kCurrencyFormat.format(play.prize)}!  ·  Salió el ${play.winningNumber}'
-                    : 'Salió el ${play.winningNumber}',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: play.isWin ? 17 : 15,
-                  color: play.isWin ? AppTheme.accent : Colors.white70,
-                ),
+              // Perder tiene que leerse como un resultado, no como un dato
+              // suelto: antes decía solo "Salió el 17" en gris y no se
+              // distinguía de no haber jugado.
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    play.isWin ? Icons.celebration : Icons.sentiment_dissatisfied,
+                    size: 20,
+                    color: play.isWin
+                        ? AppTheme.accent
+                        : const Color(0xFFFCA5A5),
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      play.isWin
+                          ? '¡Ganaste ${kCurrencyFormat.format(play.prize)}!  ·  Salió el ${play.winningNumber}'
+                          : 'No ganaste  ·  Salió el ${play.winningNumber}',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: play.isWin ? 17 : 16,
+                        color: play.isWin
+                            ? AppTheme.accent
+                            : const Color(0xFFFCA5A5),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
     );
