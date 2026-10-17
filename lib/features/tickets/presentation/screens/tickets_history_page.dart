@@ -232,7 +232,12 @@ class _TicketTile extends ConsumerWidget {
                   ),
                   _StatusChip(ticket: ticket),
                   const SizedBox(width: 4),
-                  _TicketMenu(ticket: ticket, game: game),
+                  // Las boletas de Ruleta no tienen acciones: no se
+                  // imprimen, no se repiten ni se anulan desde la app.
+                  // Mostrar un menú que falla al tocarlo es peor que no
+                  // mostrarlo.
+                  if (game?.type != GameType.roulette)
+                    _TicketMenu(ticket: ticket, game: game),
                 ],
               ),
               const SizedBox(height: 4),

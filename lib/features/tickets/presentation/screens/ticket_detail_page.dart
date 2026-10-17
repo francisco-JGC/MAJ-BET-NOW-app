@@ -8,6 +8,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../../core/utils/currency.dart';
 import '../../../../core/utils/time_format.dart';
 import '../../../games/domain/entities/game.dart';
+import '../../../games/domain/entities/game_type.dart';
 import '../../../games/presentation/screens/game_detail_page.dart';
 import '../../../games/presentation/state/games_controller.dart';
 import '../../domain/entities/ticket_detail.dart';
@@ -90,7 +91,11 @@ class TicketDetailPage extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detalle del boleto'),
-        actions: loadedGame != null && loadedDetail != null
+        // Las boletas de Ruleta no se repiten: el juego se juega desde su
+        // propia pantalla, no recargando una jugada anterior.
+        actions: loadedGame != null &&
+                loadedDetail != null &&
+                loadedGame.type != GameType.roulette
             ? [
                 IconButton(
                   icon: const Icon(Icons.replay),

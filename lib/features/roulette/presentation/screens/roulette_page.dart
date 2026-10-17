@@ -193,14 +193,16 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
         ? null
         : ref.watch(rouletteConfigProvider(salePoint.id)).value;
 
-    // El modo prueba lo decide el admin desde la web; la app solo lo
-    // refleja. Se sincroniza al estado para que la jugada y el aviso vean
-    // el mismo valor.
-    final testMode = config?.testMode ?? false;
-    if (testMode != state.isTestMode) {
+    // El admin habilita el modo prueba desde la web; el vendedor decide
+    // tirada por tirada. Si el permiso se revoca con el switch tildado,
+    // la tirada vuelve a ser real sola.
+    final testAllowed = config?.testMode ?? false;
+    if (!testAllowed && state.isTestMode) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          ref.read(rouletteControllerProvider.notifier).syncTestMode(testMode);
+          ref
+              .read(rouletteControllerProvider.notifier)
+              .revokeTestModeIfNotAllowed(allowed: testAllowed);
         }
       });
     }
@@ -217,6 +219,35 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
         elevation: 0,
         foregroundColor: Colors.white,
         title: const Text('Ruleta'),
+        actions: [
+          if (testAllowed)
+            Padding(
+              padding: const EdgeInsets.only(right: 4),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.science_outlined,
+                    size: 18,
+                    color: state.isTestMode
+                        ? const Color(0xFFF59E0B)
+                        : Colors.white38,
+                  ),
+                  const SizedBox(width: 2),
+                  const Text('Prueba',
+                      style: TextStyle(fontSize: 12, color: Colors.white70)),
+                  Switch(
+                    value: state.isTestMode,
+                    activeThumbColor: const Color(0xFFF59E0B),
+                    onChanged: state.phase == RoulettePhase.idle
+                        ? (v) => ref
+                            .read(rouletteControllerProvider.notifier)
+                            .setTestMode(value: v)
+                        : null,
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
       body: Stack(
         children: [
@@ -267,8 +298,8 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'Modo prueba: esta tirada no cuenta como venta ni '
-                          'aparece en el historial.',
+                          'MODO PRUEBA · No le cobres al cliente: esta '
+                          'tirada no factura ni paga premio.',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
@@ -655,7 +686,11 @@ class _ActionBar extends StatelessWidget {
             onPressed: state.canPlay ? onPlay : null,
             style: FilledButton.styleFrom(
               minimumSize: const Size.fromHeight(52),
-              backgroundColor: AppTheme.accent,
+              // En prueba el botón es ámbar: la diferencia tiene que verse
+              // en el mismo lugar donde se toma la decisión, no solo en un
+              // cartel arriba que se puede pasar por alto.
+              backgroundColor:
+                  state.isTestMode ? const Color(0xFFF59E0B) : AppTheme.accent,
               foregroundColor: const Color(0xFF1F1300),
               disabledBackgroundColor: Colors.white12,
               // Sin esto el estado deshabilitado tomaba el gris del tema
@@ -671,7 +706,9 @@ class _ActionBar extends StatelessWidget {
                 : Text(
                     state.selected.isEmpty
                         ? 'Elegí tus números'
-                        : 'Girar · ${kCurrencyFormat.format(state.totalAmount)}',
+                        : state.isTestMode
+                            ? 'Girar en PRUEBA · sin cobrar'
+                            : 'Girar · ${kCurrencyFormat.format(state.totalAmount)}',
                     style: const TextStyle(
                         fontWeight: FontWeight.w900, fontSize: 16),
                   ),

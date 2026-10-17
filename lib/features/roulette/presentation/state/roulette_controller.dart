@@ -36,8 +36,8 @@ class RouletteState {
   final RoulettePlay? play;
   final String? error;
 
-  /// Modo prueba vigente, leído de la configuración de la sucursal. Lo
-  /// decide el admin desde la web; la app solo lo refleja.
+  /// Lo que eligió el vendedor para ESTA tirada. Solo tiene efecto si la
+  /// sucursal tiene el modo habilitado — el servidor lo revalida.
   final bool isTestMode;
 
   int get totalAmount => amountPerNumber * selected.length;
@@ -96,11 +96,17 @@ class RouletteController extends Notifier<RouletteState> {
     state = state.copyWith(selected: const {}, clearError: true);
   }
 
-  /// Refleja el modo prueba que llega de la configuración. No lo decide
-  /// la app: solo lo copia para mostrar el aviso.
-  void syncTestMode(bool value) {
-    if (value == state.isTestMode) return;
+  void setTestMode({required bool value}) {
+    if (state.phase != RoulettePhase.idle) return;
     state = state.copyWith(isTestMode: value);
+  }
+
+  /// Si el admin revoca el permiso con el modo prueba tildado, la tirada
+  /// vuelve a ser real sola. Nunca al revés.
+  void revokeTestModeIfNotAllowed({required bool allowed}) {
+    if (!allowed && state.isTestMode) {
+      state = state.copyWith(isTestMode: false);
+    }
   }
 
   void setAmount(int amount) {
@@ -118,6 +124,7 @@ class RouletteController extends Notifier<RouletteState> {
       salePointId: salePointId,
       numbers: state.selected.toList(),
       amountPerNumber: state.amountPerNumber,
+      isTest: state.isTestMode,
     );
 
     return result.fold(
