@@ -220,6 +220,11 @@ class _GameDetailPageState extends ConsumerState<GameDetailPage> {
             amount: l.amount,
           );
         }
+      case GameType.roulette:
+        // La ruleta no usa esta pantalla: entra por /ruleta, con su propio
+        // flujo. Se declara para que el switch siga siendo exhaustivo y
+        // agregar un tipo nuevo vuelva a romper la compilación acá.
+        break;
       case GameType.multiSorteo:
         break;
     }
@@ -239,6 +244,8 @@ class _GameDetailPageState extends ConsumerState<GameDetailPage> {
       GameType.threeDigit => _Gana3GameView(game: resolved),
       GameType.fourDigit => _ComboGameView(game: resolved),
       GameType.multiSorteo => _MultiSorteoGameView(game: resolved),
+      // Inalcanzable: la ruleta tiene su propia ruta.
+      GameType.roulette => const SizedBox.shrink(),
       GameType.regular => _RegularGameView(game: resolved),
     };
     return GameLockGate(gameId: resolved.id, child: child);
@@ -518,7 +525,11 @@ class _MultiSorteoGameViewState
     final submitting = ref.watch(ticketSubmittingProvider);
 
     final subGames = (gamesAsync.value ?? const <Game>[])
-        .where((g) => g.type != GameType.multiSorteo && g.id != widget.game.id)
+        .where((g) =>
+            g.type != GameType.multiSorteo &&
+            // La ruleta no puede ser sub-sorteo: no tiene horarios.
+            g.type != GameType.roulette &&
+            g.id != widget.game.id)
         .toList();
 
     if (_selectedSubGame == null && subGames.isNotEmpty) {
@@ -678,6 +689,11 @@ class _MultiSorteoGameViewState
             ),
           ),
         );
+      case GameType.roulette:
+        // La ruleta no usa esta pantalla: entra por /ruleta, con su propio
+        // flujo. Se declara para que el switch siga siendo exhaustivo y
+        // agregar un tipo nuevo vuelva a romper la compilación acá.
+        return const SizedBox.shrink();
       case GameType.multiSorteo:
         return const SizedBox.shrink();
     }
@@ -726,6 +742,11 @@ class _MultiSorteoGameViewState
       case GameType.fourDigit:
         final c = ref.watch(comboCartControllerProvider((sub.id, sub.exactMultiplier ?? kComboMultiplier)));
         return (total: c.total, count: c.count, isEmpty: c.isEmpty);
+      case GameType.roulette:
+        // La ruleta no usa esta pantalla: entra por /ruleta, con su propio
+        // flujo. Se declara para que el switch siga siendo exhaustivo y
+        // agregar un tipo nuevo vuelva a romper la compilación acá.
+        return (total: 0, count: 0, isEmpty: true);
       case GameType.multiSorteo:
         return (total: 0, count: 0, isEmpty: true);
     }
@@ -741,6 +762,11 @@ class _MultiSorteoGameViewState
         ref.read(gana3CartControllerProvider(sub.id).notifier).clear();
       case GameType.fourDigit:
         ref.read(comboCartControllerProvider((sub.id, sub.exactMultiplier ?? kComboMultiplier)).notifier).clear();
+      case GameType.roulette:
+        // La ruleta no usa esta pantalla: entra por /ruleta, con su propio
+        // flujo. Se declara para que el switch siga siendo exhaustivo y
+        // agregar un tipo nuevo vuelva a romper la compilación acá.
+        break;
       case GameType.multiSorteo:
         return;
     }
@@ -927,6 +953,11 @@ class _MultiSorteoGameViewState
             client: cart.client,
           ),
         );
+      case GameType.roulette:
+        // La ruleta no usa esta pantalla: entra por /ruleta, con su propio
+        // flujo. Se declara para que el switch siga siendo exhaustivo y
+        // agregar un tipo nuevo vuelva a romper la compilación acá.
+        return false;
       case GameType.multiSorteo:
         return false;
     }

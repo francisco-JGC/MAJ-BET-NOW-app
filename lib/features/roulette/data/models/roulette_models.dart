@@ -32,12 +32,14 @@ class RouletteConfigModel extends RouletteConfig {
   const RouletteConfigModel({
     required super.winPercentBps,
     required super.prizeMultiplier,
+    required super.testMode,
   });
 
   factory RouletteConfigModel.fromJson(Map<String, dynamic> json) {
     return RouletteConfigModel(
       winPercentBps: (json['winPercentBps'] as num).toInt(),
       prizeMultiplier: (json['prizeMultiplier'] as num).toInt(),
+      testMode: json['testMode'] as bool? ?? false,
     );
   }
 }

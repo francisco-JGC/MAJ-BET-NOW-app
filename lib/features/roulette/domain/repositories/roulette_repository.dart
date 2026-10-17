@@ -10,7 +10,6 @@ abstract interface class RouletteRepository {
     required String salePointId,
     required List<String> numbers,
     required int amountPerNumber,
-    required bool isTest,
   });
 
   Future<Either<Failure, List<RoulettePlay>>> history({

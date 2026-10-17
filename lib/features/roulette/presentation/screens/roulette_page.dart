@@ -193,6 +193,18 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
         ? null
         : ref.watch(rouletteConfigProvider(salePoint.id)).value;
 
+    // El modo prueba lo decide el admin desde la web; la app solo lo
+    // refleja. Se sincroniza al estado para que la jugada y el aviso vean
+    // el mismo valor.
+    final testMode = config?.testMode ?? false;
+    if (testMode != state.isTestMode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ref.read(rouletteControllerProvider.notifier).syncTestMode(testMode);
+        }
+      });
+    }
+
     return Scaffold(
       // La app corre en tema claro, pero esta pantalla se diseñó sobre
       // oscuro: usa texto blanco y superficies `white12`, que sobre el
@@ -205,22 +217,6 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
         elevation: 0,
         foregroundColor: Colors.white,
         title: const Text('Ruleta'),
-        actions: [
-          Row(
-            children: [
-              const Text('Prueba',
-                  style: TextStyle(fontSize: 12, color: Colors.white70)),
-              Switch(
-                value: state.isTestMode,
-                onChanged: state.phase == RoulettePhase.idle
-                    ? (v) => ref
-                        .read(rouletteControllerProvider.notifier)
-                        .setTestMode(v)
-                    : null,
-              ),
-            ],
-          ),
-        ],
       ),
       body: Stack(
         children: [

@@ -56,11 +56,16 @@ class RouletteConfig extends Equatable {
   const RouletteConfig({
     required this.winPercentBps,
     required this.prizeMultiplier,
+    required this.testMode,
   });
 
   final int winPercentBps;
   final int prizeMultiplier;
 
+  /// Lo decide el admin desde la web. Con el modo activo la tirada se
+  /// registra para auditoría pero no genera factura ni sorteo.
+  final bool testMode;
+
   @override
-  List<Object?> get props => [winPercentBps, prizeMultiplier];
+  List<Object?> get props => [winPercentBps, prizeMultiplier, testMode];
 }

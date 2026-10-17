@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../domain/entities/game.dart';
+import '../../domain/entities/game_type.dart';
 import '../state/games_controller.dart';
 import '../widgets/game_card.dart';
 
@@ -31,7 +32,12 @@ class _GamesGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final active = games.where((g) => g.isActive).toList();
+    // La ruleta se excluye de "Juegos": ya es un juego real del catálogo
+    // (emite factura como cualquier otro), pero su lugar en la grilla es
+    // la sección Minijuegos, con su propia tarjeta y su propia pantalla.
+    final active = games
+        .where((g) => g.isActive && g.type != GameType.roulette)
+        .toList();
     if (active.isEmpty) {
       return const Center(child: Text('No hay juegos autorizados'));
     }

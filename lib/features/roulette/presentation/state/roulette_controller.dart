@@ -36,8 +36,8 @@ class RouletteState {
   final RoulettePlay? play;
   final String? error;
 
-  /// Modo prueba: la jugada se registra marcada y no cuenta como venta
-  /// ni aparece en el historial operativo.
+  /// Modo prueba vigente, leído de la configuración de la sucursal. Lo
+  /// decide el admin desde la web; la app solo lo refleja.
   final bool isTestMode;
 
   int get totalAmount => amountPerNumber * selected.length;
@@ -96,8 +96,10 @@ class RouletteController extends Notifier<RouletteState> {
     state = state.copyWith(selected: const {}, clearError: true);
   }
 
-  void setTestMode(bool value) {
-    if (state.phase != RoulettePhase.idle) return;
+  /// Refleja el modo prueba que llega de la configuración. No lo decide
+  /// la app: solo lo copia para mostrar el aviso.
+  void syncTestMode(bool value) {
+    if (value == state.isTestMode) return;
     state = state.copyWith(isTestMode: value);
   }
 
@@ -116,7 +118,6 @@ class RouletteController extends Notifier<RouletteState> {
       salePointId: salePointId,
       numbers: state.selected.toList(),
       amountPerNumber: state.amountPerNumber,
-      isTest: state.isTestMode,
     );
 
     return result.fold(
@@ -137,8 +138,6 @@ class RouletteController extends Notifier<RouletteState> {
   /// La llama la pantalla cuando la rueda terminó de girar.
   void reveal() => state = state.copyWith(phase: RoulettePhase.revealed);
 
-  /// Conserva el modo prueba a propósito: salir de prueba debe ser una
-  /// decisión explícita, no algo que pase solo al jugar de nuevo.
   void reset() {
     state = RouletteState(isTestMode: state.isTestMode);
   }

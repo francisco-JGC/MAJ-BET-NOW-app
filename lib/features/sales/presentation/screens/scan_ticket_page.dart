@@ -194,6 +194,11 @@ class _ScanTicketPageState extends ConsumerState<ScanTicketPage>
         return _loadCombo(detail, client);
       case GameType.date:
         return _loadDates(detail, client);
+      case GameType.roulette:
+        // La ruleta no usa esta pantalla: entra por /ruleta, con su propio
+        // flujo. Se declara para que el switch siga siendo exhaustivo y
+        // agregar un tipo nuevo vuelva a romper la compilación acá.
+        return 0;
       case GameType.multiSorteo:
         return 0;
     }
@@ -215,6 +220,11 @@ class _ScanTicketPageState extends ConsumerState<ScanTicketPage>
         ref
             .read(dateCartControllerProvider(widget.game.id).notifier)
             .clear();
+      case GameType.roulette:
+        // La ruleta no usa esta pantalla: entra por /ruleta, con su propio
+        // flujo. Se declara para que el switch siga siendo exhaustivo y
+        // agregar un tipo nuevo vuelva a romper la compilación acá.
+        break;
       case GameType.multiSorteo:
         // No aplica — este tipo no acepta rescanning (ver `_onDetect`).
         break;

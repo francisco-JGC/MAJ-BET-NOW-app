@@ -10,7 +10,6 @@ abstract interface class RouletteRemoteDatasource {
     required String salePointId,
     required List<String> numbers,
     required int amountPerNumber,
-    required bool isTest,
   });
   Future<List<RoulettePlayModel>> history({
     required String salePointId,
@@ -43,7 +42,6 @@ class RouletteRemoteDatasourceImpl implements RouletteRemoteDatasource {
     required String salePointId,
     required List<String> numbers,
     required int amountPerNumber,
-    required bool isTest,
   }) async {
     try {
       final res = await client.instance.post<Map<String, dynamic>>(
@@ -52,7 +50,6 @@ class RouletteRemoteDatasourceImpl implements RouletteRemoteDatasource {
           'salePointId': salePointId,
           'numbers': numbers,
           'amountPerNumber': amountPerNumber,
-          'isTest': isTest,
         },
       );
       final data = res.data;

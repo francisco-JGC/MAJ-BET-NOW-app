@@ -3,7 +3,9 @@ enum GameType {
   date,
   threeDigit,
   fourDigit,
-  multiSorteo;
+  multiSorteo,
+  /// Minijuego instantáneo: cada tirada es su propio sorteo.
+  roulette;
 
   static GameType fromKey(String key) {
     switch (key) {
@@ -11,6 +13,8 @@ enum GameType {
         return GameType.regular;
       case 'date':
         return GameType.date;
+      case 'roulette':
+        return GameType.roulette;
       case 'three_digit':
         return GameType.threeDigit;
       case 'four_digit':
@@ -28,6 +32,8 @@ enum GameType {
         return 'regular';
       case GameType.date:
         return 'date';
+      case GameType.roulette:
+        return 'roulette';
       case GameType.threeDigit:
         return 'three_digit';
       case GameType.fourDigit:
