@@ -459,54 +459,93 @@ class _ResultBanner extends StatelessWidget {
         child: FadeTransition(opacity: anim, child: child),
       ),
       child: !revealed
-          ? const SizedBox(height: 56, key: ValueKey('empty'))
+          ? const SizedBox(height: 92, key: ValueKey('empty'))
           : Container(
               key: ValueKey(play.id),
-              height: 56,
+              height: 92,
               alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: play.isWin
                     ? AppTheme.accent.withValues(alpha: 0.18)
                     : const Color(0xFFDC2626).withValues(alpha: 0.16),
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: play.isWin
                       ? AppTheme.accent
                       : const Color(0xFFDC2626),
-                  width: 2,
+                  width: play.isWin ? 2.5 : 2,
                 ),
+                boxShadow: play.isWin
+                    ? [
+                        BoxShadow(
+                          color: AppTheme.accent.withValues(alpha: 0.35),
+                          blurRadius: 24,
+                          spreadRadius: 1,
+                        ),
+                      ]
+                    : null,
               ),
-              // Perder tiene que leerse como un resultado, no como un dato
-              // suelto: antes decía solo "Salió el 17" en gris y no se
-              // distinguía de no haber jugado.
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    play.isWin ? Icons.celebration : Icons.sentiment_dissatisfied,
-                    size: 20,
-                    color: play.isWin
-                        ? AppTheme.accent
-                        : const Color(0xFFFCA5A5),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      play.isWin
-                          ? '¡Ganaste ${kCurrencyFormat.format(play.prize)}!  ·  Salió el ${play.winningNumber}'
-                          : 'No ganaste  ·  Salió el ${play.winningNumber}',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: play.isWin ? 17 : 16,
-                        color: play.isWin
-                            ? AppTheme.accent
-                            : const Color(0xFFFCA5A5),
-                      ),
+              // El monto ganado es la información que el vendedor tiene que
+              // leer de un vistazo para pagar. Va solo, grande y en una
+              // línea propia; el resto es contexto.
+              child: play.isWin
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.celebration,
+                                size: 18, color: AppTheme.accent),
+                            const SizedBox(width: 6),
+                            Text(
+                              '¡GANASTE!  ·  Salió el ${play.winningNumber}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 13,
+                                letterSpacing: 0.6,
+                                color: AppTheme.accent,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        FittedBox(
+                          child: Text(
+                            kCurrencyFormat.format(play.prize),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 34,
+                              height: 1.1,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(blurRadius: 12, color: AppTheme.accent),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.sentiment_dissatisfied,
+                            size: 20, color: Color(0xFFFCA5A5)),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            'No ganaste  ·  Salió el ${play.winningNumber}',
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16,
+                              color: Color(0xFFFCA5A5),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
             ),
     );
   }
@@ -530,8 +569,9 @@ class _BetBarState extends ConsumerState<_BetBar> {
   @override
   void initState() {
     super.initState();
-    _amountCtrl =
-        TextEditingController(text: '${widget.state.amountPerNumber}');
+    _amountCtrl = TextEditingController(
+      text: widget.state.amountPerNumber?.toString() ?? '',
+    );
   }
 
   @override
@@ -540,7 +580,7 @@ class _BetBarState extends ConsumerState<_BetBar> {
     // Solo se sincroniza cuando el monto cambió desde AFUERA (un chip o un
     // reset). Si viene de tipear, el texto ya es correcto y reescribirlo
     // movería el cursor.
-    final incoming = '${widget.state.amountPerNumber}';
+    final incoming = widget.state.amountPerNumber?.toString() ?? '';
     if (incoming != _amountCtrl.text &&
         int.tryParse(_amountCtrl.text) != widget.state.amountPerNumber) {
       _amountCtrl.text = incoming;
@@ -570,7 +610,7 @@ class _BetBarState extends ConsumerState<_BetBar> {
           // Campo editable: los chips son atajos, pero el vendedor tiene
           // que poder escribir cualquier monto.
           SizedBox(
-            width: 92,
+            width: 130,
             child: TextField(
               controller: _amountCtrl,
               enabled: enabled,
@@ -598,30 +638,15 @@ class _BetBarState extends ConsumerState<_BetBar> {
                 ),
               ),
               onChanged: (v) {
-                final parsed = int.tryParse(v);
-                if (parsed != null && parsed > 0) {
-                  ref
-                      .read(rouletteControllerProvider.notifier)
-                      .setAmount(parsed);
-                }
+                // Borrar todo deja el monto en null: el campo vacío es un
+                // estado válido, y el botón de girar se deshabilita solo.
+                ref
+                    .read(rouletteControllerProvider.notifier)
+                    .setAmount(v.trim().isEmpty ? null : int.tryParse(v));
               },
             ),
           ),
-          const SizedBox(width: 8),
-          for (final step in [10, 25, 50])
-            Padding(
-              padding: const EdgeInsets.only(left: 6),
-              child: _Chip(
-                label: '$step',
-                onTap: enabled
-                    ? () => ref
-                        .read(rouletteControllerProvider.notifier)
-                        .setAmount(step)
-                    : null,
-                active: state.amountPerNumber == step,
-              ),
-            ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -629,7 +654,9 @@ class _BetBarState extends ConsumerState<_BetBar> {
                   style: const TextStyle(fontSize: 11, color: Colors.white60)),
               const SizedBox(height: 2),
               Text(
-                kCurrencyFormat.format(state.totalAmount),
+                state.hasAmount
+                    ? kCurrencyFormat.format(state.totalAmount)
+                    : '—',
                 style: const TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 16,
@@ -638,37 +665,6 @@ class _BetBarState extends ConsumerState<_BetBar> {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _Chip extends StatelessWidget {
-  const _Chip({required this.label, required this.onTap, required this.active});
-
-  final String label;
-  final VoidCallback? onTap;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-        decoration: BoxDecoration(
-          color: active ? AppTheme.accent : Colors.white12,
-          borderRadius: BorderRadius.circular(9),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 12,
-            color: active ? const Color(0xFF1F1300) : Colors.white70,
-          ),
-        ),
       ),
     );
   }
@@ -742,9 +738,11 @@ class _ActionBar extends StatelessWidget {
                 : Text(
                     state.selected.isEmpty
                         ? 'Elegí tus números'
-                        : state.isTestMode
-                            ? 'Girar en PRUEBA · sin cobrar'
-                            : 'Girar · ${kCurrencyFormat.format(state.totalAmount)}',
+                        : !state.hasAmount
+                            ? 'Ingresá el monto'
+                            : state.isTestMode
+                                ? 'Girar en PRUEBA · sin cobrar'
+                                : 'Girar · ${kCurrencyFormat.format(state.totalAmount)}',
                     style: const TextStyle(
                         fontWeight: FontWeight.w900, fontSize: 16),
                   ),

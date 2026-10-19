@@ -23,7 +23,7 @@ enum RoulettePhase { idle, spinning, revealed }
 class RouletteState {
   const RouletteState({
     this.selected = const {},
-    this.amountPerNumber = 10,
+    this.amountPerNumber,
     this.phase = RoulettePhase.idle,
     this.play,
     this.error,
@@ -31,7 +31,11 @@ class RouletteState {
   });
 
   final Set<String> selected;
-  final int amountPerNumber;
+
+  /// Monto por número. Nulo hasta que el vendedor lo escriba: el campo
+  /// arranca vacío a propósito. Con un valor precargado era fácil girar
+  /// con un monto que el cliente nunca pidió.
+  final int? amountPerNumber;
   final RoulettePhase phase;
   final RoulettePlay? play;
   final String? error;
@@ -40,12 +44,17 @@ class RouletteState {
   /// sucursal tiene el modo habilitado — el servidor lo revalida.
   final bool isTestMode;
 
-  int get totalAmount => amountPerNumber * selected.length;
-  bool get canPlay => selected.isNotEmpty && phase == RoulettePhase.idle;
+  int get totalAmount => (amountPerNumber ?? 0) * selected.length;
+
+  bool get hasAmount => (amountPerNumber ?? 0) >= 1;
+
+  bool get canPlay =>
+      selected.isNotEmpty && hasAmount && phase == RoulettePhase.idle;
 
   RouletteState copyWith({
     Set<String>? selected,
     int? amountPerNumber,
+    bool clearAmount = false,
     RoulettePhase? phase,
     RoulettePlay? play,
     bool clearPlay = false,
@@ -55,7 +64,8 @@ class RouletteState {
   }) {
     return RouletteState(
       selected: selected ?? this.selected,
-      amountPerNumber: amountPerNumber ?? this.amountPerNumber,
+      amountPerNumber:
+          clearAmount ? null : amountPerNumber ?? this.amountPerNumber,
       phase: phase ?? this.phase,
       play: clearPlay ? null : play ?? this.play,
       error: clearError ? null : error ?? this.error,
@@ -109,8 +119,14 @@ class RouletteController extends Notifier<RouletteState> {
     }
   }
 
-  void setAmount(int amount) {
-    if (state.phase != RoulettePhase.idle || amount < 1) return;
+  /// `null` vacía el campo — es un estado válido, no un error.
+  void setAmount(int? amount) {
+    if (state.phase != RoulettePhase.idle) return;
+    if (amount == null) {
+      state = state.copyWith(clearAmount: true);
+      return;
+    }
+    if (amount < 1) return;
     state = state.copyWith(amountPerNumber: amount);
   }
 
@@ -118,12 +134,15 @@ class RouletteController extends Notifier<RouletteState> {
   /// decidido; la animación solo lo representa.
   Future<RoulettePlay?> play(String salePointId) async {
     if (!state.canPlay) return null;
+    // `canPlay` ya garantizó que hay monto; se captura acá para que el
+    // tipo no nulo sea evidente y no dependa del getter.
+    final amount = state.amountPerNumber!;
     state = state.copyWith(phase: RoulettePhase.spinning, clearError: true);
 
     final result = await getIt<RouletteRepository>().play(
       salePointId: salePointId,
       numbers: state.selected.toList(),
-      amountPerNumber: state.amountPerNumber,
+      amountPerNumber: amount,
       isTest: state.isTestMode,
     );
 

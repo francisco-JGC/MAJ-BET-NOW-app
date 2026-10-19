@@ -119,12 +119,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state, child) => AppShell(child: child),
         routes: [
           GoRoute(
-            path: '/ruleta',
-            pageBuilder: (context, state) => const NoTransitionPage(
-              child: RoulettePage(),
-            ),
-          ),
-          GoRoute(
             path: '/juegos',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: GamesPage(),
@@ -188,6 +182,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/reportes/facturas/:id',
         builder: (context, state) =>
             TicketDetailPage(ticketId: state.pathParameters['id']!),
+      ),
+      // Fuera del ShellRoute, igual que el detalle de juego: una pantalla
+      // de juego se abre encima de la app, con su propio header y su
+      // botón de volver. Dentro del shell quedaba con el header de
+      // navegación (cerrar sesión, configuración) encima del suyo.
+      GoRoute(
+        path: '/ruleta',
+        builder: (context, state) => const RoulettePage(),
       ),
       GoRoute(
         path: '/juegos/:gameId',
