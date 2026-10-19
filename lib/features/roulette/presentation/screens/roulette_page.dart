@@ -160,12 +160,20 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
 
   void _handleReset() {
     ref.read(rouletteControllerProvider.notifier).reset();
+    _resetAnimations();
+    _scrollToWheel();
+  }
+
+  /// Deja rueda, confeti y destello en cero. Vive aparte porque ahora hay
+  /// dos caminos para empezar de nuevo: el botón, y tocar un número con el
+  /// resultado en pantalla. Si solo lo hiciera el botón, por el segundo
+  /// camino la rueda quedaría girada y el confeti a medio caer.
+  void _resetAnimations() {
     _spin.reset();
     _confetti.reset();
     _lose.reset();
     _lastTickedPocket = -1;
-    setState(() => _targetIndex = 0);
-    _scrollToWheel();
+    if (mounted) setState(() => _targetIndex = 0);
   }
 
   @override
@@ -185,6 +193,15 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
             duration: const Duration(seconds: 3),
           ),
         );
+    });
+
+    // Volver a `idle` desde el resultado significa "empezó una tirada
+    // nueva", venga del botón o de tocar el tablero.
+    ref.listen(rouletteControllerProvider.select((s) => s.phase),
+        (previous, next) {
+      if (previous == RoulettePhase.revealed && next == RoulettePhase.idle) {
+        _resetAnimations();
+      }
     });
 
     final state = ref.watch(rouletteControllerProvider);
@@ -358,12 +375,7 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
-              ShakeTransition(
-                controller: _lose,
-                child: _ResultBanner(state: state),
-              ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 14),
               _Staggered(
                 controller: _entrance,
                 order: 1,
@@ -378,7 +390,7 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
                 order: 2,
                 child: NumberBoard(
                   selected: state.selected,
-                  enabled: state.phase == RoulettePhase.idle,
+                  enabled: state.phase != RoulettePhase.spinning,
                   winning: state.phase == RoulettePhase.revealed
                       ? state.play?.winningNumber
                       : null,
@@ -398,6 +410,17 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
           ),
           ConfettiOverlay(controller: _confetti),
           LoseFlash(controller: _lose),
+          // El resultado se muestra al centro, flotando: antes vivía en la
+          // lista y tenía que reservar su alto aunque no hubiera nada que
+          // mostrar, abriendo un hueco entre la rueda y el tablero.
+          IgnorePointer(
+            child: Center(
+              child: ShakeTransition(
+                controller: _lose,
+                child: _ResultBanner(state: state),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -459,16 +482,17 @@ class _ResultBanner extends StatelessWidget {
         child: FadeTransition(opacity: anim, child: child),
       ),
       child: !revealed
-          ? const SizedBox(height: 92, key: ValueKey('empty'))
+          // Flotando al centro: sin resultado no ocupa nada.
+          ? const SizedBox.shrink(key: ValueKey('empty'))
           : Container(
               key: ValueKey(play.id),
-              height: 92,
-              alignment: Alignment.center,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              margin: const EdgeInsets.symmetric(horizontal: 28),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
               decoration: BoxDecoration(
                 color: play.isWin
-                    ? AppTheme.accent.withValues(alpha: 0.18)
-                    : const Color(0xFFDC2626).withValues(alpha: 0.16),
+                    ? const Color(0xFF231042)
+                    : const Color(0xFF2A1012),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: play.isWin
@@ -476,21 +500,28 @@ class _ResultBanner extends StatelessWidget {
                       : const Color(0xFFDC2626),
                   width: play.isWin ? 2.5 : 2,
                 ),
-                boxShadow: play.isWin
-                    ? [
-                        BoxShadow(
-                          color: AppTheme.accent.withValues(alpha: 0.35),
-                          blurRadius: 24,
-                          spreadRadius: 1,
-                        ),
-                      ]
-                    : null,
+                boxShadow: [
+                  BoxShadow(
+                    color: (play.isWin
+                            ? AppTheme.accent
+                            : const Color(0xFFDC2626))
+                        .withValues(alpha: 0.45),
+                    blurRadius: 32,
+                    spreadRadius: 2,
+                  ),
+                  const BoxShadow(
+                    color: Colors.black54,
+                    blurRadius: 24,
+                    offset: Offset(0, 10),
+                  ),
+                ],
               ),
               // El monto ganado es la información que el vendedor tiene que
               // leer de un vistazo para pagar. Va solo, grande y en una
               // línea propia; el resto es contexto.
               child: play.isWin
                   ? Column(
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Row(
@@ -528,6 +559,7 @@ class _ResultBanner extends StatelessWidget {
                       ],
                     )
                   : Row(
+                      mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(Icons.sentiment_dissatisfied,
@@ -646,25 +678,108 @@ class _BetBarState extends ConsumerState<_BetBar> {
               },
             ),
           ),
-          const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text('${state.selected.length} núm · x$multiplier',
-                  style: const TextStyle(fontSize: 11, color: Colors.white60)),
-              const SizedBox(height: 2),
-              Text(
-                state.hasAmount
-                    ? kCurrencyFormat.format(state.totalAmount)
-                    : '—',
-                style: const TextStyle(
-                    fontWeight: FontWeight.w900,
-                    fontSize: 16,
-                    color: AppTheme.accent),
-              ),
-            ],
+          const SizedBox(width: 14),
+          // Bloque de resumen: lo que se apuesta y —destacado— lo que se
+          // puede ganar. El premio potencial es el número que el cliente
+          // pregunta, así que va en dorado y al doble de tamaño.
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    _Pill(
+                      text: '${state.selected.length} núm',
+                      dim: state.selected.isEmpty,
+                    ),
+                    const SizedBox(width: 4),
+                    _Pill(text: 'x$multiplier', dim: false),
+                  ],
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    const Text(
+                      'Apuesta ',
+                      style: TextStyle(fontSize: 10, color: Colors.white38),
+                    ),
+                    Text(
+                      state.hasAmount
+                          ? kCurrencyFormat.format(state.totalAmount)
+                          : '—',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 1),
+                FittedBox(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      const Text(
+                        'Gana ',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white38,
+                        ),
+                      ),
+                      Text(
+                        state.hasAmount
+                            ? kCurrencyFormat.format(
+                                (state.amountPerNumber ?? 0) * multiplier,
+                              )
+                            : '—',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 22,
+                          height: 1.05,
+                          color: AppTheme.accent,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _Pill extends StatelessWidget {
+  const _Pill({required this.text, required this.dim});
+
+  final String text;
+  final bool dim;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: dim ? 0.06 : 0.12),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
+          color: dim ? Colors.white38 : Colors.white70,
+        ),
       ),
     );
   }

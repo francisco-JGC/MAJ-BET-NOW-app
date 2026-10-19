@@ -85,6 +85,13 @@ class RouletteController extends Notifier<RouletteState> {
   static final maxSelectable = kRoulettePockets.length - 1; // 37
 
   void toggle(String number) {
+    // Con el resultado en pantalla, tocar un número arranca una tirada
+    // nueva en vez de no hacer nada. Obligar a pasar por "Jugar de nuevo"
+    // se sentía como si el tablero estuviera trabado.
+    if (state.phase == RoulettePhase.revealed) {
+      state = RouletteState(isTestMode: state.isTestMode, selected: {number});
+      return;
+    }
     if (state.phase != RoulettePhase.idle) return;
     final next = Set<String>.from(state.selected);
     if (next.contains(number)) {

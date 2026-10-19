@@ -1,7 +1,7 @@
 name: majbetnow_app
 description: "MajbetNow — aplicación móvil para vendedores (Flutter + Dart)."
 publish_to: 'none'
-version: 1.2.0+12
+version: 1.2.1+13
 
 environment:
   sdk: ^3.12.2
