@@ -370,7 +370,9 @@ class _RoulettePageState extends ConsumerState<RoulettePage>
                   child: RouletteWheel(
                     controller: _spinCurve,
                     targetIndex: _targetIndex,
-                    selected: state.selected,
+                    // La rueda solo resalta cuáles se eligieron; el
+                    // monto de cada una se muestra en el tablero.
+                    selected: state.selected.keys.toSet(),
                     size: MediaQuery.sizeOf(context).width * 0.78,
                   ),
                 ),
@@ -630,6 +632,12 @@ class _BetBarState extends ConsumerState<_BetBar> {
     final state = widget.state;
     final multiplier = widget.multiplier;
     final enabled = state.phase == RoulettePhase.idle;
+
+    final amounts = state.selected.values;
+    final allSameAmount = amounts.isEmpty || amounts.toSet().length == 1;
+    final maxWin = amounts.isEmpty
+        ? 0
+        : amounts.reduce((a, b) => a > b ? a : b) * multiplier;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -726,20 +734,23 @@ class _BetBarState extends ConsumerState<_BetBar> {
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
                     children: [
-                      const Text(
-                        'Gana ',
-                        style: TextStyle(
+                      Text(
+                        // Con montos distintos por casilla el premio ya no
+                        // es único: se muestra el mayor, que es el que
+                        // paga si acierta la apuesta más grande.
+                        state.selected.length > 1 && !allSameAmount
+                            ? 'Gana hasta '
+                            : 'Gana ',
+                        style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
                           color: Colors.white38,
                         ),
                       ),
                       Text(
-                        state.hasAmount
-                            ? kCurrencyFormat.format(
-                                (state.amountPerNumber ?? 0) * multiplier,
-                              )
-                            : '—',
+                        state.selected.isEmpty
+                            ? '—'
+                            : kCurrencyFormat.format(maxWin),
                         style: const TextStyle(
                           fontWeight: FontWeight.w900,
                           fontSize: 22,

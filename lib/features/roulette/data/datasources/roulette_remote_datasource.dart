@@ -2,14 +2,14 @@ import 'package:dio/dio.dart';
 
 import '../../../../core/errors/exceptions.dart';
 import '../../../../core/network/dio_client.dart';
+import '../../domain/entities/roulette_play.dart';
 import '../models/roulette_models.dart';
 
 abstract interface class RouletteRemoteDatasource {
   Future<RouletteConfigModel> getConfig(String salePointId);
   Future<RoulettePlayModel> play({
     required String salePointId,
-    required List<String> numbers,
-    required int amountPerNumber,
+    required List<RouletteBet> bets,
     required bool isTest,
   });
   Future<List<RoulettePlayModel>> history({
@@ -41,8 +41,7 @@ class RouletteRemoteDatasourceImpl implements RouletteRemoteDatasource {
   @override
   Future<RoulettePlayModel> play({
     required String salePointId,
-    required List<String> numbers,
-    required int amountPerNumber,
+    required List<RouletteBet> bets,
     required bool isTest,
   }) async {
     try {
@@ -50,8 +49,7 @@ class RouletteRemoteDatasourceImpl implements RouletteRemoteDatasource {
         '/roulette/play',
         data: {
           'salePointId': salePointId,
-          'numbers': numbers,
-          'amountPerNumber': amountPerNumber,
+          'bets': bets.map((b) => b.toJson()).toList(),
           'isTest': isTest,
         },
       );

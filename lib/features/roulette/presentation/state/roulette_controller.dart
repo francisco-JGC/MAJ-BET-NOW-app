@@ -30,11 +30,12 @@ class RouletteState {
     this.isTestMode = false,
   });
 
-  final Set<String> selected;
+  /// Casilla → monto. Cada número se queda con el monto que había en el
+  /// campo al tocarlo, así se puede cargar C$50 a uno y C$10 a otro.
+  final Map<String, int> selected;
 
-  /// Monto por número. Nulo hasta que el vendedor lo escriba: el campo
-  /// arranca vacío a propósito. Con un valor precargado era fácil girar
-  /// con un monto que el cliente nunca pidió.
+  /// Monto que se aplicará al PRÓXIMO número que se toque. Nulo hasta que
+  /// el vendedor lo escriba: el campo arranca vacío a propósito.
   final int? amountPerNumber;
   final RoulettePhase phase;
   final RoulettePlay? play;
@@ -44,15 +45,17 @@ class RouletteState {
   /// sucursal tiene el modo habilitado — el servidor lo revalida.
   final bool isTestMode;
 
-  int get totalAmount => (amountPerNumber ?? 0) * selected.length;
+  int get totalAmount =>
+      selected.values.fold(0, (sum, amount) => sum + amount);
 
   bool get hasAmount => (amountPerNumber ?? 0) >= 1;
 
-  bool get canPlay =>
-      selected.isNotEmpty && hasAmount && phase == RoulettePhase.idle;
+  /// Para jugar alcanza con tener números cargados: el monto del campo
+  /// solo hace falta para AGREGAR otro.
+  bool get canPlay => selected.isNotEmpty && phase == RoulettePhase.idle;
 
   RouletteState copyWith({
-    Set<String>? selected,
+    Map<String, int>? selected,
     int? amountPerNumber,
     bool clearAmount = false,
     RoulettePhase? phase,
@@ -89,28 +92,45 @@ class RouletteController extends Notifier<RouletteState> {
     // nueva en vez de no hacer nada. Obligar a pasar por "Jugar de nuevo"
     // se sentía como si el tablero estuviera trabado.
     if (state.phase == RoulettePhase.revealed) {
-      state = RouletteState(isTestMode: state.isTestMode, selected: {number});
+      final amount = state.amountPerNumber;
+      state = RouletteState(
+        isTestMode: state.isTestMode,
+        amountPerNumber: amount,
+        selected: amount == null ? const {} : {number: amount},
+      );
       return;
     }
     if (state.phase != RoulettePhase.idle) return;
-    final next = Set<String>.from(state.selected);
-    if (next.contains(number)) {
+
+    final next = Map<String, int>.from(state.selected);
+    if (next.containsKey(number)) {
       next.remove(number);
-    } else {
-      if (next.length >= maxSelectable) {
-        state = state.copyWith(
-          error: 'No podés apostar a todas las casillas: dejá al menos una afuera.',
-        );
-        return;
-      }
-      next.add(number);
+      state = state.copyWith(selected: next, clearError: true);
+      return;
     }
+
+    // Sin monto en el campo no se puede agregar: el número quedaría sin
+    // precio y no habría forma de saber cuánto cobrar.
+    final amount = state.amountPerNumber;
+    if (amount == null || amount < 1) {
+      state = state.copyWith(
+        error: 'Escribí el monto antes de elegir el número.',
+      );
+      return;
+    }
+    if (next.length >= maxSelectable) {
+      state = state.copyWith(
+        error: 'No podés apostar a todas las casillas: dejá al menos una afuera.',
+      );
+      return;
+    }
+    next[number] = amount;
     state = state.copyWith(selected: next, clearError: true);
   }
 
   void clearSelection() {
     if (state.phase != RoulettePhase.idle) return;
-    state = state.copyWith(selected: const {}, clearError: true);
+    state = state.copyWith(selected: const <String, int>{}, clearError: true);
   }
 
   void setTestMode({required bool value}) {
@@ -141,15 +161,14 @@ class RouletteController extends Notifier<RouletteState> {
   /// decidido; la animación solo lo representa.
   Future<RoulettePlay?> play(String salePointId) async {
     if (!state.canPlay) return null;
-    // `canPlay` ya garantizó que hay monto; se captura acá para que el
-    // tipo no nulo sea evidente y no dependa del getter.
-    final amount = state.amountPerNumber!;
+    final bets = state.selected.entries
+        .map((e) => RouletteBet(number: e.key, amount: e.value))
+        .toList();
     state = state.copyWith(phase: RoulettePhase.spinning, clearError: true);
 
     final result = await getIt<RouletteRepository>().play(
       salePointId: salePointId,
-      numbers: state.selected.toList(),
-      amountPerNumber: amount,
+      bets: bets,
       isTest: state.isTestMode,
     );
 

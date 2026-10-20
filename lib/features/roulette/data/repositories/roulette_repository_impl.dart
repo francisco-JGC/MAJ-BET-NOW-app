@@ -25,15 +25,13 @@ class RouletteRepositoryImpl implements RouletteRepository {
   @override
   Future<Either<Failure, RoulettePlay>> play({
     required String salePointId,
-    required List<String> numbers,
-    required int amountPerNumber,
+    required List<RouletteBet> bets,
     required bool isTest,
   }) async {
     try {
       return Right(await remote.play(
         salePointId: salePointId,
-        numbers: numbers,
-        amountPerNumber: amountPerNumber,
+        bets: bets,
         isTest: isTest,
       ));
     } on ServerException catch (e) {

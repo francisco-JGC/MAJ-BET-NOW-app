@@ -8,8 +8,7 @@ abstract interface class RouletteRepository {
 
   Future<Either<Failure, RoulettePlay>> play({
     required String salePointId,
-    required List<String> numbers,
-    required int amountPerNumber,
+    required List<RouletteBet> bets,
     required bool isTest,
   });
 

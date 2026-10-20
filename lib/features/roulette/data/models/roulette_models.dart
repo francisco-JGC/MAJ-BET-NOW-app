@@ -3,8 +3,7 @@ import '../../domain/entities/roulette_play.dart';
 class RoulettePlayModel extends RoulettePlay {
   const RoulettePlayModel({
     required super.id,
-    required super.numbers,
-    required super.amountPerNumber,
+    required super.bets,
     required super.totalAmount,
     required super.winningNumber,
     required super.isWin,
@@ -16,8 +15,12 @@ class RoulettePlayModel extends RoulettePlay {
   factory RoulettePlayModel.fromJson(Map<String, dynamic> json) {
     return RoulettePlayModel(
       id: json['id'] as String,
-      numbers: (json['numbers'] as List<dynamic>).map((e) => '$e').toList(),
-      amountPerNumber: (json['amountPerNumber'] as num).toInt(),
+      bets: (json['bets'] as List<dynamic>)
+          .map((e) => RouletteBet(
+                number: '${(e as Map<String, dynamic>)['number']}',
+                amount: (e['amount'] as num).toInt(),
+              ))
+          .toList(),
       totalAmount: (json['totalAmount'] as num).toInt(),
       winningNumber: '${json['winningNumber']}',
       isWin: json['isWin'] as bool,

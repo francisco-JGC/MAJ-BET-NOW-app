@@ -14,7 +14,8 @@ class NumberBoard extends StatelessWidget {
     super.key,
   });
 
-  final Set<String> selected;
+  /// Casilla → monto apostado.
+  final Map<String, int> selected;
   final ValueChanged<String> onToggle;
   final bool enabled;
 
@@ -27,9 +28,23 @@ class NumberBoard extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(child: _Cell(n: '0', state: _stateOf('0'), onTap: _tap)),
+            Expanded(
+              child: _Cell(
+                n: '0',
+                state: _stateOf('0'),
+                amount: selected['0'],
+                onTap: _tap,
+              ),
+            ),
             const SizedBox(width: 6),
-            Expanded(child: _Cell(n: '00', state: _stateOf('00'), onTap: _tap)),
+            Expanded(
+              child: _Cell(
+                n: '00',
+                state: _stateOf('00'),
+                amount: selected['00'],
+                onTap: _tap,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 6),
@@ -45,7 +60,12 @@ class NumberBoard extends StatelessWidget {
           itemCount: 36,
           itemBuilder: (context, i) {
             final n = '${i + 1}';
-            return _Cell(n: n, state: _stateOf(n), onTap: _tap);
+            return _Cell(
+              n: n,
+              state: _stateOf(n),
+              amount: selected[n],
+              onTap: _tap,
+            );
           },
         ),
       ],
@@ -58,7 +78,7 @@ class NumberBoard extends StatelessWidget {
 
   _CellState _stateOf(String n) {
     if (winning == n) return _CellState.winner;
-    if (selected.contains(n)) return _CellState.selected;
+    if (selected.containsKey(n)) return _CellState.selected;
     return enabled ? _CellState.idle : _CellState.locked;
   }
 }
@@ -66,10 +86,18 @@ class NumberBoard extends StatelessWidget {
 enum _CellState { idle, selected, winner, locked }
 
 class _Cell extends StatelessWidget {
-  const _Cell({required this.n, required this.state, required this.onTap});
+  const _Cell({
+    required this.n,
+    required this.state,
+    required this.amount,
+    required this.onTap,
+  });
 
   final String n;
   final _CellState state;
+
+  /// Monto apostado a esta casilla, si se eligió.
+  final int? amount;
   final ValueChanged<String> onTap;
 
   @override
@@ -110,18 +138,37 @@ class _Cell extends StatelessWidget {
                 ]
               : null,
         ),
-        child: Center(
-          child: AnimatedDefaultTextStyle(
-            duration: const Duration(milliseconds: 180),
-            style: TextStyle(
-              color: isWinner ? const Color(0xFF1F1300) : Colors.white,
-              fontWeight: FontWeight.w900,
-              fontSize: isSelected || isWinner ? 16 : 14,
-            ),
-            child: Opacity(
-              opacity: state == _CellState.locked ? 0.55 : 1,
-              child: Text(n),
-            ),
+        child: Opacity(
+          opacity: state == _CellState.locked ? 0.55 : 1,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 180),
+                style: TextStyle(
+                  color: isWinner ? const Color(0xFF1F1300) : Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: isSelected || isWinner ? 16 : 14,
+                  height: 1.05,
+                ),
+                child: Text(n),
+              ),
+              // El monto va en la casilla y no en una lista aparte: con
+              // montos distintos por número, hay que poder leer de un
+              // vistazo cuánto lleva cada uno.
+              if (amount != null)
+                Text(
+                  '$amount',
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                    height: 1.1,
+                    color: isWinner
+                        ? const Color(0xFF1F1300)
+                        : AppTheme.accent,
+                  ),
+                ),
+            ],
           ),
         ),
       ),

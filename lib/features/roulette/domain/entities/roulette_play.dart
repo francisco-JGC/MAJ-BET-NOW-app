@@ -21,11 +21,23 @@ const Set<String> kRedPockets = {
 bool isGreenPocket(String n) => n == '0' || n == '00';
 bool isRedPocket(String n) => kRedPockets.contains(n);
 
+/// Una apuesta: una casilla con SU monto.
+class RouletteBet extends Equatable {
+  const RouletteBet({required this.number, required this.amount});
+
+  final String number;
+  final int amount;
+
+  Map<String, dynamic> toJson() => {'number': number, 'amount': amount};
+
+  @override
+  List<Object?> get props => [number, amount];
+}
+
 class RoulettePlay extends Equatable {
   const RoulettePlay({
     required this.id,
-    required this.numbers,
-    required this.amountPerNumber,
+    required this.bets,
     required this.totalAmount,
     required this.winningNumber,
     required this.isWin,
@@ -35,9 +47,10 @@ class RoulettePlay extends Equatable {
   });
 
   final String id;
-  final List<String> numbers;
-  final int amountPerNumber;
+  final List<RouletteBet> bets;
   final int totalAmount;
+
+  List<String> get numbers => bets.map((b) => b.number).toList();
   final String winningNumber;
   final bool isWin;
   final int prize;
@@ -49,7 +62,7 @@ class RoulettePlay extends Equatable {
 
   @override
   List<Object?> get props =>
-      [id, numbers, amountPerNumber, totalAmount, winningNumber, isWin, prize, isTest, createdAt];
+      [id, bets, totalAmount, winningNumber, isWin, prize, isTest, createdAt];
 }
 
 class RouletteConfig extends Equatable {
